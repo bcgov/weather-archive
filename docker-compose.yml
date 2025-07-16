@@ -9,8 +9,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      - MINIO_ROOT_USER=${S3_ACCESS_KEY}
-      - MINIO_ROOT_PASSWORD=${S3_SECRET_KEY}
+      - MINIO_ROOT_USER=${S3_ACCESS_KEY:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${S3_SECRET_KEY:-minioadmin}
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
@@ -31,8 +31,8 @@ services:
         condition: service_healthy
     environment:
       - MINIO_ENDPOINT=minio:9000
-      - MINIO_ACCESS_KEY=${S3_ACCESS_KEY}
-      - MINIO_SECRET_KEY=${S3_SECRET_KEY}
+      - MINIO_ACCESS_KEY=${S3_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${S3_SECRET_KEY:-minioadmin}
       - MINIO_SECURE=false
     volumes:
       - script_data:/app/Data
@@ -51,12 +51,12 @@ services:
         condition: service_completed_successfully
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - Jwt__Key=${JWT_KEY}
+      - Jwt__Key=${JWT_KEY:-YourSuperSecretSigningKeyHere111}
       - Jwt__Issuer=PWAApi
       - S3__ServiceUrl=http://minio:9000
       - S3__Bucket=paws
-      - S3__AccessKey=${S3_ACCESS_KEY}
-      - S3__SecretKey=${S3_SECRET_KEY}
+      - S3__AccessKey=${S3_ACCESS_KEY:-minioadmin}
+      - S3__SecretKey=${S3_SECRET_KEY:-minioadmin}
     volumes:
       - script_data:/app/Data:ro
     expose:
