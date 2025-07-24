@@ -59,7 +59,9 @@ jobs:
     name: Build the client image
     runs-on: ubuntu-latest
     environment: dev
-
+    defaults:
+      run:
+        working-directory: ./frontend
     steps:
     - name: checkout code
       uses: actions/checkout@v4
@@ -72,7 +74,7 @@ jobs:
         labels: |
           app=pwa-frontend
         containerfiles: |
-          ./frontend/Dockerfile
+          Dockerfile
     - name: Push the image to OpenShift Registry
       uses: redhat-actions/push-to-registry@v2
       with:
