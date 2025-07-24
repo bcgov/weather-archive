@@ -59,9 +59,7 @@ jobs:
     name: Build the client image
     runs-on: ubuntu-latest
     environment: dev
-    defaults:
-      run:
-        working-directory: ./frontend
+
     steps:
     - name: checkout code
       uses: actions/checkout@v4
@@ -73,8 +71,9 @@ jobs:
         tags: latest
         labels: |
           app=pwa-frontend
+        context: .
         containerfiles: |
-          Dockerfile
+          ./frontend/Dockerfile
     - name: Push the image to OpenShift Registry
       uses: redhat-actions/push-to-registry@v2
       with:
@@ -104,7 +103,7 @@ jobs:
         containerfiles: |
           ./backend/Dockerfile
     - name: Push the image to OpenShift Registry
-      uses: redhat-actions/push-to-registry@v2s
+      uses: redhat-actions/push-to-registry@v2
       with:
         image: ${{ steps.build_backend_image.outputs.image }}
         tags: ${{ steps.build_backend_image.outputs.tags }}
@@ -112,19 +111,19 @@ jobs:
         username: pwa-cicd
         password: env.OPENSHIFT_TOKEN
 
-  # deploy-images:
-  #   name: Deploy the latest images to the namespace
-  #   runs-on: ubuntu-latest
-  #   needs: [build-server, build-client]
-  #   steps:
-  #   - name: Checkout
-  #     uses: actions/checkout@v4
-  #   - name: Give openshift context
-  #     uses: redhat-actions/oc-login@v1
-  #     with:
-  #       openshift_server_url: env.OPENSHIFT_SERVER
-  #       openshift_token: env.OPENSHIFT_TOKEN
-  #       namespace: env.OPENSHIFT_NAMESPACE
-  #   - name: Run helm script
-  #     run: |
-  #       helm upgrade pwa-dev -f ./pwa-infra
+  deploy-images:
+    name: Deploy the latest images to the namespace
+    runs-on: ubuntu-latest
+    needs: [build-server, build-client]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Give openshift context
+      uses: redhat-actions/oc-login@v1
+      with:
+        openshift_server_url: env.OPENSHIFT_SERVER
+        openshift_token: env.OPENSHIFT_TOKEN
+        namespace: env.OPENSHIFT_NAMESPACE
+    - name: Run helm script
+      run: |
+        helm upgrade pwa-dev -f ./infrastructure
