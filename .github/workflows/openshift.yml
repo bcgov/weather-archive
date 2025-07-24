@@ -45,14 +45,14 @@ env:
 
   # 🖊️ EDIT to change the image registry settings.
   # Registries such as GHCR, Quay.io, and Docker Hub are supported.
-  IMAGE_REGISTRY: image-registry.apps.silver.devops.gov.bc.ca/d78a41-dev/
+  IMAGE_REGISTRY: image-registry.apps.silver.devops.gov.bc.ca/d78a41-dev
 
   IMAGE_TAGS: "latest"
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "oc" ]
+#  push:
+#    branches: [ "oc" ]
 
 jobs:
   build-client:
@@ -79,9 +79,9 @@ jobs:
       with:
         image: ${{ steps.build_frontend_image.outputs.image }}
         tags: ${{ steps.build_frontend_image.outputs.tags }}
-        registry: env.IMAGE_REGISTRY
+        registry: ${{ env.IMAGE_REGISTRY }}
         username: pwa-cicd
-        password: env.OPENSHIFT_TOKEN
+        password: ${{ env.OPENSHIFT_TOKEN }}
       
     
   build-server:
@@ -107,23 +107,23 @@ jobs:
       with:
         image: ${{ steps.build_backend_image.outputs.image }}
         tags: ${{ steps.build_backend_image.outputs.tags }}
-        registry: env.IMAGE_REGISTRY
+        registry: ${{ env.IMAGE_REGISTRY }}
         username: pwa-cicd
-        password: env.OPENSHIFT_TOKEN
+        password: ${{ env.OPENSHIFT_TOKEN }}
 
-  deploy-images:
-    name: Deploy the latest images to the namespace
-    runs-on: ubuntu-latest
-    needs: [build-server, build-client]
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Give openshift context
-      uses: redhat-actions/oc-login@v1
-      with:
-        openshift_server_url: env.OPENSHIFT_SERVER
-        openshift_token: env.OPENSHIFT_TOKEN
-        namespace: env.OPENSHIFT_NAMESPACE
-    - name: Run helm script
-      run: |
-        helm upgrade pwa-dev -f ./infrastructure
+#  deploy-images:
+#    name: Deploy the latest images to the namespace
+#    runs-on: ubuntu-latest
+#    needs: [build-server, build-client]
+#    steps:
+#    - name: Checkout
+#      uses: actions/checkout@v4
+#    - name: Give openshift context
+#      uses: redhat-actions/oc-login@v1
+#      with:
+#        openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
+#        openshift_token: ${{ env.OPENSHIFT_TOKEN }}
+#        namespace: ${{ env.OPENSHIFT_NAMESPACE }}
+#    - name: Run helm script
+#      run: |
+#        helm upgrade pwa-dev -f ./infrastructure
