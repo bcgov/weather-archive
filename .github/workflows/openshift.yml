@@ -8,7 +8,6 @@
 # - Perform a container image build
 # - Push the built image to the GitHub Container Registry (GHCR)
 # - Log in to your OpenShift cluster
-# - Create an OpenShift app from the image and expose it to the internet
 
 # ℹ️ Configure your repository and the workflow with the following steps:
 # 1. Have access to an OpenShift cluster. Refer to https://www.openshift.com/try
@@ -51,12 +50,12 @@ env:
 
 on:
   workflow_dispatch:
-#  push:
-#    branches: [ "oc" ]
+  push:
+    branches: [ "oc" ]
 
 jobs:
   build-client:
-    name: Build the client image
+    name: Build the clients image
     runs-on: ubuntu-latest
     environment: dev
 
@@ -100,6 +99,7 @@ jobs:
         tags: latest
         labels: |
           app=pwa-backend
+        context: .
         containerfiles: |
           ./backend/Dockerfile
     - name: Push the image to OpenShift Registry
