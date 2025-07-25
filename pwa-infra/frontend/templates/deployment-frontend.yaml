@@ -20,7 +20,7 @@ spec:
             image-registry.openshift-image-registry.svc:5000/d78a41-dev/pwa-frontend:latest
           ports:
             - containerPort: 80
-              protocol: web
+              protocol: TCP
           env: []
       imagePullSecrets: []
   strategy:
