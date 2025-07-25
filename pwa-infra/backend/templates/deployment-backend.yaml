@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: d78a41-dev
+  name: 'pwa-backend'
+  annotations: {}
+spec:
+  selector:
+    matchLabels:
+      app: pwa-backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: pwa-backend
+    spec:
+      containers:
+        - name: container
+          image: >-
+            image-registry.openshift-image-registry.svc:5000/d78a41-dev/pwa-backend:latest
+          ports:
+            - containerPort: 8080
+              protocol: tcp
+          env: []
+      imagePullSecrets: []
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  paused: false
+

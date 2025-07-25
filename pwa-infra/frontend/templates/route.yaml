@@ -1,0 +1,16 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: pwa-frontend
+  namespace: d78a41-dev
+  labels:
+    app: pwa-frontend
+spec:
+  to:
+    kind: Service
+    name: pwa-frontend
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  port:
+    targetPort: web
