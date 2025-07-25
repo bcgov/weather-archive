@@ -6,8 +6,8 @@ COPY ./frontend/source /usr/share/nginx/html
 # Copy nginx configuration
 COPY ./frontend/nginx.conf /etc/nginx/nginx.conf
 
-# Expose port 80
-EXPOSE 80
+# Expose port 8081
+EXPOSE 8081
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
