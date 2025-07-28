@@ -5,6 +5,8 @@ metadata:
   namespace: d78a41-dev
   labels:
     app: pwa-frontend
+  annotations:
+    haproxy.router.openshift.io/ip_whitelist: 142.34.53.0/24 142.22.0.0/15 142.24.0.0/13 142.32.0.0/13
 spec:
   to:
     kind: Service
@@ -13,4 +15,4 @@ spec:
     termination: edge
     insecureEdgeTerminationPolicy: Redirect
   port:
-    targetPort: web
+    targetPort: 80-http
