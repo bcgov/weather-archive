@@ -80,10 +80,10 @@ builder.Services.AddHealthChecks()
 
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    serverOptions.Limits.MaxRequestHeadersTotalSize = 32 * 1024;
-    serverOptions.Limits.MaxRequestHeaderCount = 20;
-    serverOptions.Limits.MaxRequestLineSize = 8 * 1024;
-    serverOptions.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(10);
+    serverOptions.Limits.MaxRequestHeadersTotalSize = 128 * 1024;
+    serverOptions.Limits.MaxRequestHeaderCount = 50;
+    serverOptions.Limits.MaxRequestLineSize = 32 * 1024;
+    serverOptions.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(30);
 });
 
 
