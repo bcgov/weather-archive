@@ -1,0 +1,5 @@
+frontend:
+  route:
+    host: pwa-dev.apps.silver.devops.gov.bc.ca
+    iprestricted: true
+    ipallowlist: 142.34.53.0/24 142.22.0.0/15 142.24.0.0/13 142.32.0.0/13 #BCGov range only

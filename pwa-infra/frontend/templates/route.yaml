@@ -1,16 +1,17 @@
 kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
-  name: pwa-frontend
-  namespace: d78a41-dev
-  labels:
-    app: pwa-frontend
+  name: {{ template "pwa-infra.fullname" . }}
+  labels: {{ include "pwa-infra.labels" . | nindent 4 }}
   annotations:
-    haproxy.router.openshift.io/ip_whitelist: 142.34.53.0/24 142.22.0.0/15 142.24.0.0/13 142.32.0.0/13
+  {{- if .Values.route.iprestricted }}
+    haproxy.router.openshift.io/ip_whitelist: {{.Values.route.ipallowlist }}
+  {{- end}}
 spec:
+  host: {{ .Values.route.host }}
   to:
     kind: Service
-    name: pwa-frontend
+    name: {{ template "pwa-infra.fullname" . }}
   tls:
     termination: edge
     insecureEdgeTerminationPolicy: Redirect

@@ -1,9 +1,8 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: pwa-backend
-  labels:
-    app: pwa-backend
+  name: {{ include "pwa-infra.fullname" . }}
+  labels: {{- include "pwa-infra.labels" . | nindent 4 }}
 spec:
   ports:
     - port: 8080
@@ -12,4 +11,4 @@ spec:
       name: tcp-8080
   internalTrafficPolicy: Cluster
   selector:
-    app: pwa-backend
+    {{ include "pwa-infra.selectorLabels" . | nindent 4 }}

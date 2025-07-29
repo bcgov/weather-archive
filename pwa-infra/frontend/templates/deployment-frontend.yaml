@@ -1,27 +1,57 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: d78a41-dev
-  name: 'pwa-frontend'
-  annotations: {}
+  name: {{ template "pwa-infra.fullname" . }}
+  labels: {{ include "pwa-infra.labels" . | nindent 4 }}
 spec:
   selector:
-    matchLabels:
-      app: pwa-frontend
-  replicas: 1
+    matchLabels: {{ include "pwa-infra.selectorLabels" . | nindent 6 }}
+  replicas: {{ .Values.replicaCount }}
   template:
     metadata:
-      labels:
-        app: pwa-frontend
+      labels: {{ include "pwa-infra.selectorLabels" . | nindent 8 }}
     spec:
       containers:
-        - name: container
-          image: >-
-            image-registry.openshift-image-registry.svc:5000/d78a41-dev/pwa-frontend:latest
+        - resources:
+            requests:
+              cpu: {{ .Values.deployment.resources.requests.cpu  }}
+              memory: {{ .Values.deployment.resources.requests.memory  }}
+            limits:
+              memory: {{ .Values.deployment.resources.limits.memory  }}
+              cpu: {{ .Values.deployment.resources.limits.cpu }}
+          name: {{ include "pwa-infra.fullname" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
               protocol: TCP
           env: []
+          readinessProbe:
+            httpGet:
+              path: /health/
+              port: 8081
+              scheme: HTTP
+              httpHeaders:
+                - name: host
+                  value: localhost
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+              scheme: HTTP
+              httpHeaders:
+                - name: host
+                  value: localhost
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+            periodSeconds: 60
+            successThreshold: 1
+            failureThreshold: 30
       imagePullSecrets: []
   strategy:
     type: RollingUpdate

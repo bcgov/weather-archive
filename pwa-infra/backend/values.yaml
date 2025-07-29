@@ -1,0 +1,20 @@
+fullnameOverride: pwa-backend
+nameOverride: pwa-backend
+
+replicaCount: 1
+
+image:
+  repository: image-registry.openshift-image-registry.svc:5000/d78a41-dev/pwa-backend
+  tag: latest
+
+deployment:
+  resources:
+    requests:
+      memory: "250Mi"
+      cpu: "50m"
+    limits:
+      memory: "500Mi" 
+      cpu: "200m"
+  env:
+    s3creds: "s3-credentials"
+    jwtsecret: "jwt-secret"
