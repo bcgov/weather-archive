@@ -25,6 +25,10 @@ spec:
           ports:
             - containerPort: 80
               protocol: TCP
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
           env: []
           readinessProbe:
             httpGet:
@@ -52,6 +56,10 @@ spec:
             periodSeconds: 60
             successThreshold: 1
             failureThreshold: 30
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: {{ template "pwa-infra.fullname" . }}-nginx-config
       imagePullSecrets: []
   strategy:
     type: RollingUpdate
