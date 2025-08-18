@@ -1,62 +1,20 @@
 version: '3.8'
 
 services:
-  # MinIO storage service
-  minio:
-    image: minio/minio:latest
-    container_name: minio
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    environment:
-      - MINIO_ROOT_USER=${S3_ACCESS_KEY:-minioadmin}
-      - MINIO_ROOT_PASSWORD=${S3_SECRET_KEY:-minioadmin}
-    command: server /data --console-address ":9001"
-    volumes:
-      - minio_data:/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
-    networks:
-      - app-network
-
-  # Script service - runs once to populate MinIO
-  script:
-    build: ./Scripts
-    container_name: script
-    depends_on:
-      minio:
-        condition: service_healthy
-    environment:
-      - MINIO_ENDPOINT=minio:9000
-      - MINIO_ACCESS_KEY=${S3_ACCESS_KEY:-minioadmin}
-      - MINIO_SECRET_KEY=${S3_SECRET_KEY:-minioadmin}
-      - MINIO_SECURE=false
-    volumes:
-      - script_data:/app/Data
-    restart: "no"
-    networks:
-      - app-network
-
   # Backend .NET service
   backend:
     build: 
       context: .
       dockerfile: backend/Dockerfile
     container_name: backend
-    depends_on:
-      script:
-        condition: service_completed_successfully
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - Jwt__Key=${JWT_KEY:-YourSuperSecretSigningKeyHere111}
       - Jwt__Issuer=PWAApi
-      - S3__ServiceUrl=http://minio:9000
+      - S3__ServiceUrl=${S3_SERVICE_URL}
       - S3__Bucket=paws
-      - S3__AccessKey=${S3_ACCESS_KEY:-minioadmin}
-      - S3__SecretKey=${S3_SECRET_KEY:-minioadmin}
+      - S3__AccessKey=${S3_ACCESS_KEY}
+      - S3__SecretKey=${S3_SECRET_KEY}
     volumes:
       - script_data:/app/Data:ro
     expose:
@@ -87,7 +45,6 @@ services:
       - app-network
 
 volumes:
-  minio_data:
   script_data:
 
 networks:
