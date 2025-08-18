@@ -20,18 +20,12 @@ const PWAApp = (() => {
         COORDINATE_PRECISION: 5
     };
 
-    // Month names for converting numeric month codes
-    const MONTHS = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-
     // Map configuration
     const MAP_CONFIG = {
         BC_EXTENT: [-160, 40, -100, 70],
         CENTER: [-127.545, 54.15],
         ZOOM: 6,
-        MIN_ZOOM: 4,
+        MIN_ZOOM: 5,
         BASEMAP_URL: 'https://www.arcgis.com/sharing/rest/content/items/b1624fea73bd46c681fab55be53d96ae/resources/styles/root.json',
         WEBFONTS_PATH: './vendor/fonts/{font-family}/{fontweight}{-fontstyle}.css'
     };
@@ -53,7 +47,8 @@ const PWAApp = (() => {
         map: {
             $loading: $('#mapLoading'),
             $error: $('#mapError'),
-            $panel: $('.map-panel')
+            $panel: $('.map-panel'),
+            $tooltip: $('#mapTooltip')
         },
         buttons: {
             $expand: $('#expandBtn'),
@@ -74,7 +69,7 @@ const PWAApp = (() => {
     let vectorLayer = null;
     let selectedFeature = null;
     let allSensors = [];
-    const featureMap = {};
+    const featureMap = new Map();
     let fileFetchController = null;
 
     // =============================================================================
@@ -113,34 +108,18 @@ const PWAApp = (() => {
     };
 
     /**
-     * Sanitizes text for safe display by escaping HTML entities and limiting length.
-     * @param {string} text - The text to sanitize for display
-     * @returns {string} Sanitized text
-     */
-    const sanitizeForDisplay = (text) => {
-        if (!text) return '';
-
-        const entities = {
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;',
-            '&': '&amp;'
-        };
-
-        return text
-            .replace(/[<>"'&]/g, (char) => entities[char])
-            .substring(0, CONFIG.MAX_DISPLAY_LENGTH);
-    };
-
-    /**
      * Converts a two-digit month code to a full month name.
      * @param {string} monthCode - Month code "01".."12"
      * @returns {string} Month name
      */
     const getMonthName = (monthCode) => {
-        const index = parseInt(monthCode, 10) - 1;
-        return MONTHS[index] || monthCode;
+        const monthNum = parseInt(monthCode, 10);
+        if (monthNum < 1 || monthNum > 12 || isNaN(monthNum)) {
+            return monthCode;
+        }
+        
+        return new Date(2000, monthNum - 1, 1)
+            .toLocaleDateString('en', { month: 'long' });
     };
 
     /**
@@ -444,7 +423,8 @@ const PWAApp = (() => {
         return fetch(url, {
             ...options,
             headers: {
-                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 ...options.headers
             }
         });
@@ -604,6 +584,10 @@ const PWAApp = (() => {
      * @returns {ol.Feature|null} Currently hovered feature
      */
     const handleMapPointerMove = (evt, lastHovered) => {
+        if (evt.dragging || map.getView().getAnimating() || map.getView().getInteracting()) {
+            UI_ELEMENTS.map.$tooltip.hide();
+            return lastHovered;
+        }
         const hit = map.forEachFeatureAtPixel(
             evt.pixel,
             (feature, layer) => layer === vectorLayer ? feature : null,
@@ -617,10 +601,17 @@ const PWAApp = (() => {
 
         // Apply hover state
         if (hit && hit !== selectedFeature) {
+            UI_ELEMENTS.map.$tooltip.css({
+                left: evt.pixel[0] + 'px',
+                top: evt.pixel[1] + 'px'
+            });
+            UI_ELEMENTS.map.$tooltip.show();
+            UI_ELEMENTS.map.$tooltip.text(hit.get('sensorData')?.name || "Unknown");
             hit.setStyle(MAP_STYLES.hover);
             map.getTargetElement().style.cursor = 'pointer';
             return hit;
         } else {
+            UI_ELEMENTS.map.$tooltip.hide();
             map.getTargetElement().style.cursor = '';
             return null;
         }
@@ -670,9 +661,9 @@ const PWAApp = (() => {
                 'data-id': sensor.id,
                 'role': 'option',
                 'tabindex': '0',
-                'aria-label': `Weather station: ${sanitizeForDisplay(sensor.name)}`
+                'aria-label': `Weather station: ${sensor.name}`
             })
-            .text(sanitizeForDisplay(sensor.name));
+            .text(sensor.name);
     };
 
     /**
@@ -701,7 +692,7 @@ const PWAApp = (() => {
             // Create and add map feature
             const feature = createSensorFeature(sensor);
             vectorLayer.getSource().addFeature(feature);
-            featureMap[sensor.id] = feature;
+            featureMap.set(sensor.id, feature);
 
             // Create and add list item
             const $listItem = createSensorListItem(sensor);
@@ -750,8 +741,8 @@ const PWAApp = (() => {
      * @param {Object} sensorData - The sensor data to display
      */
     const updateSensorDetails = (sensorData) => {
-        UI_ELEMENTS.details.$name.text(sanitizeForDisplay(sensorData.name));
-        UI_ELEMENTS.details.$description.text(sanitizeForDisplay(sensorData.description));
+        UI_ELEMENTS.details.$name.text(sensorData.name);
+        UI_ELEMENTS.details.$description.text(sensorData.description);
         UI_ELEMENTS.details.$lng.text(sensorData.longitude.toFixed(CONFIG.COORDINATE_PRECISION));
         UI_ELEMENTS.details.$lat.text(sensorData.latitude.toFixed(CONFIG.COORDINATE_PRECISION));
     };
@@ -885,11 +876,11 @@ const PWAApp = (() => {
     // =============================================================================
 
     /**
-     * Handles search input with sanitization and filtering.
+     * Handles search input with filtering.
      */
     const handleSearchInput = debounce(() => {
         const rawQuery = UI_ELEMENTS.sensor.$searchInput.val();
-        const query = sanitizeForDisplay(rawQuery)
+        const query = rawQuery
             .toLowerCase()
             .substring(0, CONFIG.MAX_SEARCH_LENGTH);
 
@@ -911,7 +902,7 @@ const PWAApp = (() => {
         event.preventDefault();
 
         const sensorId = $(event.currentTarget).data('id');
-        const feature = featureMap[sensorId];
+        const feature = featureMap.get(sensorId);
 
         if (feature) {
             handleSensorSelection(feature, false);
