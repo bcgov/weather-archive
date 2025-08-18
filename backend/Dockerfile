@@ -16,9 +16,6 @@ WORKDIR /src
 COPY backend/PWAApi.csproj ./
 RUN dotnet restore "PWAApi.csproj" --disable-parallel
 
-# Create Data directory and copy sensors.json
-RUN mkdir -p ./Data
-COPY scripts/sensors.json ./Data/sensors.json
 
 # Copy all source files
 COPY backend/ ./
