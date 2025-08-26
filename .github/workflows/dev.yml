@@ -78,12 +78,18 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Install OC CLI tools
+      uses: redhat-actions/openshift-tools-installer@v1
+      with:
+        oc: "4"
+        skip_cache: true
     - name: Give openshift context
       uses: redhat-actions/oc-login@v1
       with:
         openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
         openshift_token: ${{ env.OPENSHIFT_TOKEN }}
         namespace: ${{ env.OPENSHIFT_NAMESPACE }}
+        insecure_skip_tls_verify: false
     - name: Run helm script
       run: |
         helm upgrade --install pwa-dev ./pwa-infra -f ./pwa-infra/values-dev.yaml --namespace ${{ env.OPENSHIFT_NAMESPACE }}
