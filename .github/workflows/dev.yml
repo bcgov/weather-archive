@@ -27,7 +27,7 @@ jobs:
       uses: redhat-actions/buildah-build@v2
       with:
         image: pwa-frontend
-        tags: latest
+        tags: latest ${{ github.sha }}
         labels: |
           app=pwa-frontend
         context: .
@@ -56,7 +56,7 @@ jobs:
       uses: redhat-actions/buildah-build@v2
       with:
         image: pwa-backend
-        tags: latest
+        tags: latest ${{ github.sha }}
         labels: |
           app=pwa-backend
         context: .
@@ -92,4 +92,4 @@ jobs:
         insecure_skip_tls_verify: false
     - name: Run helm script
       run: |
-        helm upgrade --install pwa-dev ./pwa-infra -f ./pwa-infra/values-dev.yaml --namespace ${{ env.OPENSHIFT_NAMESPACE }}
+        helm upgrade --install pwa-dev ./pwa-infra -f ./pwa-infra/values-dev.yaml --set frontend.image.tag=${{ github.sha }} --set backend.image.tag=${{ github.sha }} --namespace ${{ env.OPENSHIFT_NAMESPACE }}
