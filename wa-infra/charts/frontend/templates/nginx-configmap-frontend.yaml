@@ -59,7 +59,7 @@ data:
 
         # Upstream for backend service
         upstream wa_backend {
-            server wa-backend:8080;
+            server {{ .Values.backendConfig.name }}:8080;
             keepalive 32;
         }
 

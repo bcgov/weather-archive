@@ -1,4 +1,12 @@
+backend:
+  fullnameOverride: wa-dev-backend
+  nameOverride: wa-dev-backend
+
 frontend:
+  fullnameOverride: wa-dev-frontend
+  nameOverride: wa-dev-frontend
+  backendConfig:
+    name: wa-dev-backend
   route:
     host: wa-dev.apps.silver.devops.gov.bc.ca
     iprestricted: true

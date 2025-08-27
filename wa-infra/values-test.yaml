@@ -1,4 +1,12 @@
+backend:
+  fullnameOverride: wa-test-backend
+  nameOverride: wa-test-backend
+
 frontend:
+  fullnameOverride: wa-test-frontend
+  nameOverride: wa-test-frontend
+  backendConfig:
+    name: wa-test-backend
   route:
     host: wa-test.apps.silver.devops.gov.bc.ca
     iprestricted: true
