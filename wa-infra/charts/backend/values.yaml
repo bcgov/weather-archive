@@ -4,7 +4,7 @@ nameOverride: wa-backend
 replicaCount: 1
 
 image:
-  repository: image-registry.openshift-image-registry.svc:5000/d78a41-dev/wa-backend
+  repository: image-registry.openshift-image-registry.svc:5000/d78a41-tools/wa-backend
   tag: latest
 
 deployment:
