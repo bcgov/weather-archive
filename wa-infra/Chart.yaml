@@ -1,6 +1,6 @@
 apiVersion: v2
-name: pwa-infra
-description: A Helm chart for Public Weather Archive
+name: wa-infra
+description: A Helm chart for Weather Archive
 
 type: application
 

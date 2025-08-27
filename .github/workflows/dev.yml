@@ -26,10 +26,10 @@ jobs:
       id: build_frontend_image
       uses: redhat-actions/buildah-build@v2
       with:
-        image: pwa-frontend
+        image: wa-frontend
         tags: latest ${{ github.sha }}
         labels: |
-          app=pwa-frontend
+          app=wa-frontend
         context: .
         containerfiles: |
           ./frontend/Dockerfile
@@ -55,10 +55,10 @@ jobs:
       id: build_backend_image
       uses: redhat-actions/buildah-build@v2
       with:
-        image: pwa-backend
+        image: wa-backend
         tags: latest ${{ github.sha }}
         labels: |
-          app=pwa-backend
+          app=wa-backend
         context: .
         containerfiles: |
           ./backend/Dockerfile
@@ -92,4 +92,4 @@ jobs:
         insecure_skip_tls_verify: false
     - name: Run helm script
       run: |
-        helm upgrade --install pwa-dev ./pwa-infra -f ./pwa-infra/values-dev.yaml --set frontend.image.tag=${{ github.sha }} --set backend.image.tag=${{ github.sha }} --namespace ${{ env.OPENSHIFT_NAMESPACE }}
+        helm upgrade --install wa-dev ./wa-infra -f ./wa-infra/values-dev.yaml --set frontend.image.tag=${{ github.sha }} --set backend.image.tag=${{ github.sha }} --namespace ${{ env.OPENSHIFT_NAMESPACE }}
