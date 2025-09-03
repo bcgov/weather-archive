@@ -29,7 +29,11 @@ spec:
             - name: nginx-config
               mountPath: /etc/nginx/nginx.conf
               subPath: nginx.conf
-          env: []
+          env:
+            - name: ENVIRONMENT
+              value: {{ .Values.environment | quote }}
+            - name: HEADER_COLOR
+              value: {{ .Values.headerColor | quote }}
           readinessProbe:
             httpGet:
               path: /health/
