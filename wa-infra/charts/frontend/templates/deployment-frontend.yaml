@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "pwa-infra.fullname" . }}
+  labels: {{ include "pwa-infra.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{ include "pwa-infra.selectorLabels" . | nindent 6 }}
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels: {{ include "pwa-infra.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - resources:
+            requests:
+              cpu: {{ .Values.deployment.resources.requests.cpu  }}
+              memory: {{ .Values.deployment.resources.requests.memory  }}
+            limits:
+              memory: {{ .Values.deployment.resources.limits.memory  }}
+              cpu: {{ .Values.deployment.resources.limits.cpu }}
+          name: {{ include "pwa-infra.fullname" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+          env:
+            - name: ENVIRONMENT
+              value: {{ .Values.environment | quote }}
+            - name: HEADER_COLOR
+              value: {{ .Values.headerColor | quote }}
+          readinessProbe:
+            httpGet:
+              path: /health/
+              port: 8081
+              scheme: HTTP
+              httpHeaders:
+                - name: host
+                  value: localhost
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+              scheme: HTTP
+              httpHeaders:
+                - name: host
+                  value: localhost
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+            periodSeconds: 60
+            successThreshold: 1
+            failureThreshold: 30
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: {{ template "pwa-infra.fullname" . }}-nginx-config
+      imagePullSecrets: []
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  paused: false
+

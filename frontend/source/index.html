@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <base href="/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Weather Archive - Download monthly data from Weather Stations across British Columbia.">
+  <title>Weather Archive</title>
+  <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+  <!-- Bootstrap 5 CSS -->
+  <link href="vendor/css/bootstrap-theme.min.css?v=1752516480" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="vendor/css/bootstrap-icons.css?v=1752516480" rel="stylesheet" />
+  <!-- OpenLayers CSS -->
+  <link href="vendor/css/ol.css?v=1752516480" rel="stylesheet" />
+  <!-- App CSS-->
+   <link href="css/app.css?v=1752516480" rel="stylesheet" />
+</head>
+
+<body>
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary-nav" role="navigation" aria-label="Main navigation">
+      <!-- Navbar content -->
+      <div class="container">
+        <a class="navbar-brand" href="#">
+          <img class="img-fluid d-none d-md-block"
+            src="assets/images/bcid-logo-rev-en.svg" width="177" height="44"
+            alt="B.C. Government Logo">
+          <img class="img-fluid d-md-none"
+            src="assets/images/bcid-symbol-rev.svg" width="63" height="44"
+            alt="B.C. Government Logo">
+        </a>
+        <h1 class="navbar-brand mb-0">Weather Archive</h1>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+          aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+          <div class="navbar-nav">
+            <a class="nav-link" href="#">Home</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+  <noscript>
+      <div class="position-absolute top-0 start-0 w-100 h-100
+            bg-white bg-opacity-75
+           d-flex justify-content-center align-items-center
+           pe-auto z-3">
+        <div class="alert alert-danger shadow-lg rounded text-center w-25" role="alert">
+          <h4 class="alert-heading">This application requires JavaScript.</h4>
+          <p>Please enable JavaScript in your browser settings and reload the page.</p>
+        </div>
+      </div>
+    </noscript>
+  <main class="map-panel p-0" role="main">
+    <div id="mapContainer">
+      <div id="mapTooltip" class="position-absolute h-auto w-auto text-white text-center rounded px-2 py-1" style="z-index: 100;transform: translateX(3%);pointer-events: none;background-color: var(--bs-primary);display:none;"></div>
+      <div id="map" role="region" aria-label="British Columbia Map"></div>
+      <div id="mapError" class="position-absolute top-0 start-0 w-100 h-100
+            bg-white bg-opacity-75
+           d-flex justify-content-center align-items-center
+           pe-auto z-3 d-none" role="alert" aria-live="assertive">
+      </div>
+      <div id="mapLoading"
+        class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-flex justify-content-center align-items-center pe-auto z-3 d-none" role="alert" aria-live="polite">
+        <div class="text-center">
+          <div class="spinner-border" role="status" aria-hidden="true">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <h3>Loading Data</h3>
+        </div>
+      </div>
+      <button id="listBtn" class="btn btn-outline-primary position-absolute top-0 start-0 m-3" aria-controls="sensorList" aria-expanded="true" aria-label="Open Weather Station List">
+        <i class="bi bi-list" aria-hidden="true"></i> Weather Stations
+      </button>
+
+      <div id="sensorList" class="card position-absolute top-0 start-0 m-3 sensor-list border-0 shadow" role="region" aria-labelledby="sensorListLabel">
+        <div class="card-header d-flex align-items-center gap-2 p-2">
+          <div class="pill bg-primary text-white rounded-5 px-2">1</div>
+          <div id="sensorListLabel">Select a Station</div>
+          <button id="listCloseBtn" class="btn-close ms-auto" aria-label="Close Station List"></button>
+        </div>
+        <div class="p-2">
+          <input id="searchInput" class="form-control form-control-sm" placeholder="Search Weather Stations" aria-label="Search Weather Stations"/>
+        </div>
+        <ul id="sensorListGroup" class="list-group list-group-flush overflow-auto" style="max-height: 50vh;" role="listbox" aria-labelledby="sensorListLabel"></ul>
+      </div>
+    </div>
+
+    <aside id="sensorDetails" class="bg-light border-start" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="observationHeading">
+      <div class="p-3 border-bottom d-flex justify-content-between align-items-center gap-2">
+        <div class="pill bg-primary text-white rounded-5 px-2">2</div>
+        <h2 id="observationHeading" class="mb-0">Observation Data</h2>
+        <div class="d-flex align-items-center">
+          <button id="expandBtn" class="btn btn-sm btn-outline-secondary me-2" style="display: none;" aria-label="Expand Observation Panel">
+            <i class="bi bi-chevron-up" aria-hidden="true"></i>
+          </button>
+          <button id="closeBtn" class="btn-close" aria-label="Close Observation Panel"></button>
+        </div>
+      </div>
+      <div id="sensorDetailsContents" class="flex-grow-1 overflow-auto p-3">
+        <p>
+          <strong>Weather Station:</strong>
+          <span id="detailName"></span>
+        </p>
+        <p>
+          <strong>Description:</strong>
+          <span id="detailDescription"></span>
+        </p>
+        <p hidden>
+          <strong>Longitude:</strong>
+          <span id="detailLng"></span>
+        </p>
+        <p hidden>
+          <strong>Latitude:</strong>
+          <span id="detailLat"></span>
+        </p>
+        <div class="card mb-2">
+          <div class="card-body">
+            <div class="row d-flex align-items-center gy-2">
+              <div class="col">
+                <label for="sensor-year-select" class="form-label visually-hidden">Select Year</label>
+                <select id="sensor-year-select" class="form-select">
+                  <option value="" selected="">Select Year</option>
+                  <option value="2025">2025</option>
+                  <option value="2024">2024</option>
+                  <option value="2023">2023</option>
+                  <option value="2022">2022</option>
+                </select>
+              </div>
+            </div>
+            <hr>
+            <h3 id="observation-loader-text" class="text-center py-4 d-none"></h3>
+            <div id="observation-loader" class="text-center py-4 d-none" role="status" aria-live="polite">
+              <div class="spinner-border" role="status" aria-hidden="true">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <ul id="observation-data-list" class="list-group list-group-flush d-none">
+            </ul>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script src="vendor/js/jquery-3.6.0.min.js?v=1752516480"></script>
+  <script src="vendor/js/bootstrap.bundle.min.js?v=1752516480"></script>
+  <script src="vendor/js/ol.js?v=1752516480"></script>
+  <script src="vendor/js/olms.js?v=1752516480"></script>
+  <script src="js/app.js?v=1752516480"></script>
+</body>
+
+</html>

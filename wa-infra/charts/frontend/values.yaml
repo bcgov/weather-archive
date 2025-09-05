@@ -1,0 +1,30 @@
+fullnameOverride: wa-frontend
+nameOverride: wa-frontend
+backendConfig:
+  name: wa-backend
+environment: production
+headerColor: "#003366"
+
+replicaCount: 1
+
+image:
+  repository: image-registry.openshift-image-registry.svc:5000/d78a41-tools/wa-frontend
+  tag: latest
+
+deployment:
+  resources:
+    requests:
+      memory: "32Mi"
+      cpu: "10m"
+    limits:
+      memory: "128Mi" 
+      cpu: "200m"
+
+route:
+  host: wa.apps.silver.devops.gov.bc.ca
+  iprestricted: false
+  ipallowlist:
+    - "142.34.53.0/24"
+    - "142.22.0.0/15"
+    - "142.24.0.0/13" 
+    - "142.32.0.0/13"

@@ -1,0 +1,19 @@
+backend:
+  fullnameOverride: wa-dev-backend
+  nameOverride: wa-dev-backend
+
+frontend:
+  fullnameOverride: wa-dev-frontend
+  nameOverride: wa-dev-frontend
+  environment: development
+  headerColor: "#448a38"
+  backendConfig:
+    name: wa-dev-backend
+  route:
+    host: wa-dev.apps.silver.devops.gov.bc.ca
+    iprestricted: true
+    ipallowlist:
+      - "142.34.53.0/24"
+      - "142.22.0.0/15"
+      - "142.24.0.0/13" 
+      - "142.32.0.0/13"
