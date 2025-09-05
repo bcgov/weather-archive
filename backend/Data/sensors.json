@@ -10,7 +10,10 @@
       ]
     },
     "location_description": "W side of Hwy, 11 km N of Whistler Creek",
-    "elevation": 496
+    "elevation": 496,
+    "dataStartYear": 2010,
+    "dataEndYear": null,
+    "status": "active"
   },
   {
     "weather_station_name": "Station 2",
@@ -23,6 +26,9 @@
       ]
     },
     "location_description": "Hwy east side at Batt Creek, 100 m south of entrance to upper view point.",
-    "elevation": 320
+    "elevation": 320,
+    "dataStartYear": 2010,
+    "dataEndYear": 2022,
+    "status": "decommisioned"
   }
 ]

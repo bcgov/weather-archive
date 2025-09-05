@@ -10,6 +10,11 @@ namespace PWAApi.Services.Interfaces
         Task<IReadOnlyList<WeatherStation>> ListAllAsync();
 
         /// <summary>
+        /// Returns true if Station and StationYear is available based on SensorFile.
+        /// </summary>
+        Task<bool> IsValidStationRequestAsync(int stationId, int stationYear);
+
+        /// <summary>
         /// Retrieves download tokens for each month of the specified year for a station.
         /// </summary>
         Task<IReadOnlyList<MonthlyFileToken>> GetMonthlyFileTokensAsync(int stationId, int year);

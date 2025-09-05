@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using PWAApi.DTOs;
 using PWAApi.Models.Queries;
 using PWAApi.Services.Interfaces;
-using System.ComponentModel.DataAnnotations;
 
 namespace PWAApi.Controllers
 {
@@ -26,7 +25,11 @@ namespace PWAApi.Controllers
                 Name = m.Name,
                 Description = m.Description,
                 Longitude = m.Longitude,
-                Latitude = m.Latitude
+                Latitude = m.Latitude,
+                Elevation = m.Elevation,
+                DataStartYear = m.DataStartYear,
+                DataEndYear = m.DataEndYear,
+                Status = m.Status
             });
             return Ok(dtos);
         }
@@ -35,26 +38,18 @@ namespace PWAApi.Controllers
         /// Get download tokens for each month of a specified year.
         /// </summary>
         [HttpGet("{stationId}/years/{year}")]
-        public async Task<ActionResult<IEnumerable<MonthlyFileTokenDto>>> GetMonthlyTokensAsync([FromRoute] int stationId, [FromRoute] int year)
+        public async Task<ActionResult<IEnumerable<MonthlyFileTokenDto>>> GetMonthlyTokensAsync([FromRoute] MonthlyTokenQuery request)
         {
-            var request = new MonthlyTokenQuery
+            if (!await _weatherStationService.IsValidStationRequestAsync(request.StationId, request.Year))
             {
-                StationId = stationId,
-                Year = year
-            };
-            var validationContext = new ValidationContext(request);
-            var validationResults = new List<ValidationResult>();
-
-            if (!Validator.TryValidateObject(request, validationContext, validationResults, true))
-            {
-                return BadRequest();
+                return Problem(
+                    statusCode: 404,
+                    title: "Data Not Found",
+                    detail: "The requested data is not available"
+                );
             }
             var tokenModels = await _weatherStationService.GetMonthlyFileTokensAsync(request.StationId, request.Year);
-            if (tokenModels == null || !tokenModels.Any())
-            {
-                return Ok(Enumerable.Empty<MonthlyFileTokenDto>());
-            }
-
+            
             var dtos = tokenModels.Select(m => new MonthlyFileTokenDto
             {
                 Year = m.Year,
@@ -69,49 +64,34 @@ namespace PWAApi.Controllers
         /// </summary>
         [HttpGet("{stationId}/files/{year}/{month}")]
         [Authorize(AuthenticationSchemes = "Bearer")]
-        public async Task<IActionResult> DownloadFileAsync([FromRoute] int stationId, [FromRoute] int year, [FromRoute] int month)
+        public async Task<IActionResult> DownloadFileAsync([FromRoute] FileDownloadQuery request)
         {
-            try
+            if (!await _weatherStationService.IsValidStationRequestAsync(request.StationId, request.Year))
             {
-                var request = new FileDownloadQuery
-                {
-                    StationId = stationId,
-                    Year = year,
-                    Month = month
-                };
-                var validationContext = new ValidationContext(request);
-                var validationResults = new List<ValidationResult>();
-
-                if (!Validator.TryValidateObject(request, validationContext, validationResults, true))
-                {
-                    return BadRequest();
-                }
-                // Extract the 'file' claim from the JWT
-                var fileClaim = User.FindFirst("file")?.Value;
-                var expectedFileKey = $"{stationId}_{year:D4}_{month:D2}.csv";
-
-                if (fileClaim == null || !fileClaim.EndsWith(expectedFileKey, StringComparison.OrdinalIgnoreCase))
-                {
-                    return Unauthorized(); // Claim is missing or doesn't match the requested file
-                }
-
-                var stream = await _weatherStationService.GetMonthlyDataStreamAsync(stationId, year, month);
-                if (stream == null)
-                {
-                    return NotFound();
-                }
-
-                var fileName = $"{stationId}_{year}_{month}.csv";
-                return File(stream, "text/csv", fileName);
+                return Problem(
+                    statusCode: 404,
+                    title: "Data Not Found",
+                    detail: "The requested data is not available"
+                );
             }
-            catch (UnauthorizedAccessException)
+            // Extract the 'file' claim from the JWT
+            var fileClaim = User.FindFirst("file")?.Value;
+            var expectedFileKey = $"{request.StationId}_{request.Year:D4}_{request.Month:D2}.csv";
+
+            if (fileClaim == null || !fileClaim.Equals(expectedFileKey, StringComparison.OrdinalIgnoreCase))
             {
                 return Unauthorized();
             }
-            catch (Exception ex)
+
+            var stream = await _weatherStationService.GetMonthlyDataStreamAsync(request.StationId, request.Year, request.Month);
+            if (stream == null)
             {
-                return StatusCode(500, new { error = ex.Message });
+                return NotFound();
             }
+
+            var fileName = $"{request.StationId}_{request.Year}_{request.Month}.csv";
+            return File(stream, "text/csv", fileName);
+      
         }
     }
 }

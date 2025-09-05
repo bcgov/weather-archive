@@ -1,5 +1,6 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -14,24 +15,50 @@ namespace PWAApi.Services
     public class WeatherStationService(
       IHostEnvironment env,
       IAmazonS3 s3Client,
+      ILogger<WeatherStationService> logger,
       IOptions<JwtOptions> jwtOptions,
-      IOptions<S3Options> s3Options) : IWeatherStationService
+      IOptions<S3Options> s3Options,
+      IMemoryCache memoryCache) : IWeatherStationService
     {
         private readonly IAmazonS3 _s3Client = s3Client;
         private readonly JwtOptions _jwtOptions = jwtOptions.Value;
         private readonly S3Options _s3Options = s3Options.Value;
+        private readonly IMemoryCache _memoryCache = memoryCache;
+        private readonly ILogger _logger = logger;
+        private const string STATIONS_CACHE_KEY = "weather_stations";
 
-        public async Task<IReadOnlyList<WeatherStation>> ListAllAsync()
+        
+        private async Task<Dictionary<int, WeatherStation>> GetCachedStationsAsync()
+        {
+            if (_memoryCache.TryGetValue(STATIONS_CACHE_KEY, out Dictionary<int, WeatherStation>? cached))
+            {
+                return cached!;
+            }
+
+            var stations = await LoadStationsFromFileAsync();
+
+            // Cache until 2:30 AM next day
+            var expiration = DateTime.Today.AddDays(1).AddHours(2.5);
+            _memoryCache.Set(STATIONS_CACHE_KEY, stations, expiration);
+
+            _logger.LogInformation("Loaded and cached {StationCount} weather stations until {ExpirationTime}",
+                stations.Count, expiration);
+
+            return stations;
+        }
+
+        private async Task<Dictionary<int, WeatherStation>> LoadStationsFromFileAsync()
         {
             var filePath = Path.Combine(env.ContentRootPath, "Data", "sensors.json");
             if (!File.Exists(filePath))
             {
+                logger.LogWarning("Weather stations file not found at {FilePath}", filePath);
                 return [];
             }
 
             var json = await File.ReadAllTextAsync(filePath);
             using var doc = JsonDocument.Parse(json);
-
+            var currentYearDate = DateTime.Now.Year;
             var stations = doc.RootElement.EnumerateArray()
               .Select(el =>
               {
@@ -48,33 +75,51 @@ namespace PWAApi.Services
                       Name = el.GetProperty("weather_station_name").GetString()!,
                       Description = el.GetProperty("location_description").GetString()!,
                       Longitude = coords[0],
-                      Latitude = coords[1]
+                      Latitude = coords[1],
+                      Elevation = el.GetProperty("elevation").GetInt32(),
+                      DataStartYear = el.GetProperty("dataStartYear").GetInt32(),
+                      DataEndYear = el.GetProperty("dataEndYear").ValueKind == JsonValueKind.Null ? currentYearDate : el.GetProperty("dataEndYear").GetInt32(),
+                      Status = el.GetProperty("status").GetString()!
                   };
               })
-              .ToList();
+              .ToDictionary(station => station.Id);
 
             return stations;
         }
 
+        public async Task<IReadOnlyList<WeatherStation>> ListAllAsync()
+        {
+            var stations = await GetCachedStationsAsync();
+            return [.. stations.Values];
+        }
+        public async Task<bool> IsValidStationRequestAsync(int stationId, int stationYear)
+        {
+            var stations = await GetCachedStationsAsync();
+            if (!stations.TryGetValue(stationId, out var station))
+            {
+                return false;
+            }
+            return stationYear >= station.DataStartYear && stationYear <= station.DataEndYear;
+        }
+
         public async Task<IReadOnlyList<MonthlyFileToken>> GetMonthlyFileTokensAsync(int stationId, int year)
         {
-            try
-            {
-                // TODO: Determine available months (e.g., from S3 or precomputed data)
                 var availableMonths = await GetAvailableMonthsAsync(stationId, year);
-
+                if (availableMonths.Count == 0)
+                {
+                    _logger.LogInformation("No data available for station {StationId}, year {Year}", stationId, year);
+                }
                 var now = DateTime.UtcNow;
                 var keyBytes = Encoding.UTF8.GetBytes(_jwtOptions.Key);
                 var securityKey = new SymmetricSecurityKey(keyBytes);
                 var handler = new JsonWebTokenHandler { SetDefaultTimesOnTokenCreation = false };
 
-                var tokens = new List<MonthlyFileToken>();
                 var tokenTasks =
                 availableMonths.Select(month => Task.Run(() =>
                 {
                     var claims = new Dictionary<string, object>
                     {
-                        ["file"] = BuildS3Key(stationId, year, month)
+                        ["file"] = $"{ stationId }_{ year }_{ month:D2}.csv"
                     };
                     var descriptor = new SecurityTokenDescriptor
                     {
@@ -97,11 +142,6 @@ namespace PWAApi.Services
                 }));
 
                 return await Task.WhenAll(tokenTasks);
-            }
-            catch
-            {
-                throw new Exception("An error occurred while generating monthly file tokens.");
-            }
         }
 
         public async Task<Stream?> GetMonthlyDataStreamAsync(int stationId, int year, int month)
@@ -110,25 +150,27 @@ namespace PWAApi.Services
             var key = BuildS3Key(stationId, year, month);
             try
             {
-                var response = await _s3Client.GetObjectAsync(new GetObjectRequest
+                var request = new GetObjectRequest
                 {
                     BucketName = _s3Options.Bucket,
                     Key = key
-                });
-                return response.ResponseStream;
+                };
+                using var response = await _s3Client.GetObjectAsync(request);
+                var memoryStream = new MemoryStream();
+                await response.ResponseStream.CopyToAsync(memoryStream);
+                memoryStream.Position = 0;
+                return memoryStream;
             }
             catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
+                _logger.LogWarning(ex, "File not found in S3: {S3Key} for station {StationId}", key, stationId);
                 return null;
             }
         }
 
         private async Task<IReadOnlyList<int>> GetAvailableMonthsAsync(int stationId, int year)
         {
-            //Needs caching
-            try
-            {
-                var prefix = $"{stationId}_{year}_";
+                var prefix = $"{stationId}/{year}/";
                 var request = new ListObjectsV2Request
                 {
                     BucketName = _s3Options.Bucket,
@@ -147,6 +189,7 @@ namespace PWAApi.Services
 
                 foreach (var s3Object in response.S3Objects)
                 {
+  
                     var fileName = Path.GetFileNameWithoutExtension(s3Object.Key); // e.g., "1111_2024_01"
                     var parts = fileName.Split('_');
                     if (parts.Length == 3 && int.TryParse(parts[2], out int month) && month >= 1 && month <= 12)
@@ -156,14 +199,9 @@ namespace PWAApi.Services
                 }
 
                 return [.. months.OrderBy(m => m)];
-            }
-            catch
-            {
-                throw new Exception("An error occurred while getting monthly data for sensor.");
-            }
         }
 
         private static string BuildS3Key(int stationId, int year, int month)
-          => $"{stationId}_{year}_{month:D2}.csv";
+          => $"{stationId}/{year}/{stationId}_{year}_{month:D2}.csv";
     }
 }
