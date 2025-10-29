@@ -5,8 +5,8 @@
   <base href="/">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Public Weather Archive - Download monthly data from Weather Stations across British Columbia.">
-  <title>Public Weather Archive</title>
+  <meta name="description" content="Weather Archive - Download monthly data from Weather Stations across British Columbia.">
+  <title>Weather Archive</title>
   <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
   <!-- Bootstrap 5 CSS -->
   <link href="vendor/css/bootstrap-theme.min.css?v=1752516480" rel="stylesheet">
@@ -73,7 +73,7 @@
           <h3>Loading Data</h3>
         </div>
       </div>
-      <button id="listBtn" class="btn btn-outline-primary position-absolute top-0 start-0 m-3" aria-controls="sensorList" aria-expanded="true" aria-label="Open Weather Station List">
+      <button id="stationsListBtn" class="btn btn-outline-primary position-absolute top-0 start-0 m-3" aria-controls="sensorList" aria-expanded="true" aria-label="Open Weather Station List">
         <i class="bi bi-list" aria-hidden="true"></i> Weather Stations
       </button>
 
@@ -81,10 +81,10 @@
         <div class="card-header d-flex align-items-center gap-2 p-2">
           <div class="pill bg-primary text-white rounded-5 px-2">1</div>
           <div id="sensorListLabel">Select a Station</div>
-          <button id="listCloseBtn" class="btn-close ms-auto" aria-label="Close Station List"></button>
+          <button id="stationsListCloseBtn" class="btn-close ms-auto" aria-label="Close Station List"></button>
         </div>
         <div class="p-2">
-          <input id="searchInput" class="form-control form-control-sm" placeholder="Search Weather Stations" aria-label="Search Weather Stations"/>
+          <input id="stationSearchInput" class="form-control form-control-sm" placeholder="Search Weather Stations" aria-label="Search Weather Stations"/>
         </div>
         <ul id="sensorListGroup" class="list-group list-group-flush overflow-auto" style="max-height: 50vh;" role="listbox" aria-labelledby="sensorListLabel"></ul>
       </div>
@@ -151,7 +151,7 @@
   <script src="vendor/js/bootstrap.bundle.min.js?v=1752516480"></script>
   <script src="vendor/js/ol.js?v=1752516480"></script>
   <script src="vendor/js/olms.js?v=1752516480"></script>
-  <script src="js/app.js?v=1752516480"></script>
+  <script type="module" src="js/main.js?v=1752516480"></script>
 </body>
 
 </html>
