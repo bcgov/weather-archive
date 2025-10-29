@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "pwa-infra.fullname" . }}
+  labels: {{ include "pwa-infra.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 80
+      targetPort: 8081
+      protocol: TCP
+      name: 80-http
+  selector:
+    {{ include "pwa-infra.selectorLabels" . | nindent 4 }}

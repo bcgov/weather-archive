@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pwa-infra.fullname" . }}
+  labels: {{- include "pwa-infra.labels" . | nindent 4 }}
+  annotations: {}
+spec:
+  selector:
+    matchLabels: {{- include "pwa-infra.selectorLabels" . | nindent 6 }}
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        {{- include "pwa-infra.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - resources:
+            requests:
+              cpu: {{ .Values.deployment.resources.requests.cpu  }}
+              memory: {{ .Values.deployment.resources.requests.memory  }}
+            limits:
+              memory: {{ .Values.deployment.resources.limits.memory  }}
+              cpu: {{ .Values.deployment.resources.limits.cpu }}
+          name: {{ include "pwa-infra.fullname" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: Jwt__Key
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.deployment.env.jwtsecret }}
+                  key: token
+            - name: S3__ServiceUrl
+              valueFrom:
+                secretKeyRef:
+                  name: {{.Values.deployment.env.s3creds}}
+                  key: endpoint-url
+            - name: S3__Bucket
+              valueFrom:
+                secretKeyRef:
+                  name: {{.Values.deployment.env.s3creds}}
+                  key: bucket-name
+            - name: S3__AccessKey
+              valueFrom:
+                secretKeyRef:
+                  name: {{.Values.deployment.env.s3creds}}
+                  key: access-key
+            - name: S3__SecretKey
+              valueFrom:
+                secretKeyRef:
+                  name: {{.Values.deployment.env.s3creds}}
+                  key: secret-key
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+              scheme: HTTP
+              httpHeaders:
+                - name: host
+                  value: localhost
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+              scheme: HTTP
+              httpHeaders:
+                - name: host
+                  value: localhost
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+            periodSeconds: 60
+            successThreshold: 1
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+              scheme: HTTP
+              httpHeaders:
+                - name: host
+                  value: localhost
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+      imagePullSecrets: []
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  paused: false
+
