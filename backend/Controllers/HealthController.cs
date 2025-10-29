@@ -2,13 +2,17 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Text.Json;
 
+
 namespace PWAApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class HealthController(HealthCheckService healthCheckService) : ControllerBase
+    public class HealthController(HealthCheckService healthCheckService, ILogger<HealthController> logger) : ControllerBase
     {
         private readonly HealthCheckService _healthCheckService = healthCheckService;
+        private readonly ILogger<HealthController> _logger = logger;
+
+        private const string HealthCheckFailedMessage = "Health check failed";
 
         /// <summary>
         /// Liveness probe - checks if the application is running
@@ -29,7 +33,8 @@ namespace PWAApi.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(503, $"Health check failed: {ex.Message}");
+                _logger.LogError(ex, HealthCheckFailedMessage);
+                return StatusCode(503, HealthCheckFailedMessage);
             }
         }
 
@@ -64,7 +69,8 @@ namespace PWAApi.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(503, $"Health check failed: {ex.Message}");
+                _logger.LogError(ex, HealthCheckFailedMessage);
+                return StatusCode(503, HealthCheckFailedMessage);
             }
         }
 
@@ -84,7 +90,8 @@ namespace PWAApi.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(503, $"Health check failed: {ex.Message}");
+                _logger.LogError(ex, HealthCheckFailedMessage);
+                return StatusCode(503, HealthCheckFailedMessage);
             }
         }
     }

@@ -16,15 +16,5 @@
         /// The S3 bucket name where CSV files are stored.
         /// </summary>
         public string Bucket { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Access key ID for S3 credentials.
-        /// </summary>
-        public string AccessKey { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Secret access key for S3 credentials.
-        /// </summary>
-        public string SecretKey { get; set; } = string.Empty;
     }
 }

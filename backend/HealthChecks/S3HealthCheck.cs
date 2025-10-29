@@ -11,7 +11,7 @@ namespace PWAApi.HealthChecks
         {
             try
             {
-                var response = await _s3Client.ListBucketsAsync(cancellationToken);
+                await _s3Client.ListBucketsAsync(cancellationToken);
                 return HealthCheckResult.Healthy("S3 is reachable");
             }
             catch (Exception ex)

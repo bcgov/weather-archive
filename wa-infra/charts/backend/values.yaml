@@ -1,10 +1,10 @@
-fullnameOverride: pwa-backend
-nameOverride: pwa-backend
+fullnameOverride: wa-backend
+nameOverride: wa-backend
 
 replicaCount: 1
 
 image:
-  repository: image-registry.openshift-image-registry.svc:5000/d78a41-dev/pwa-backend
+  repository: image-registry.openshift-image-registry.svc:5000/d78a41-tools/wa-backend
   tag: latest
 
 deployment:

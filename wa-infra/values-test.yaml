@@ -1,0 +1,13 @@
+backend:
+  fullnameOverride: wa-test-backend
+  nameOverride: wa-test-backend
+
+frontend:
+  fullnameOverride: wa-test-frontend
+  nameOverride: wa-test-frontend
+  backendConfig:
+    name: wa-test-backend
+  route:
+    host: wa-test.apps.silver.devops.gov.bc.ca
+    iprestricted: true
+    ipallowlist: 142.34.53.0/24 142.22.0.0/15 142.24.0.0/13 142.32.0.0/13 #BCGov range only
