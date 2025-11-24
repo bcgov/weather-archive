@@ -16,5 +16,10 @@
         /// The S3 bucket name where CSV files are stored.
         /// </summary>
         public string Bucket { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The prefix to use for environment directory inside bucket
+        /// </summary>
+        public string Prefix { get; set; } = string.Empty;
     }
 }

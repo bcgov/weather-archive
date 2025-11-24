@@ -1,7 +1,7 @@
 [
   {
     "weather_station_name": "Station 1",
-    "id": "11000",
+    "code": "11000",
     "location": {
       "type": "Point",
       "coordinates": [
@@ -17,7 +17,7 @@
   },
   {
     "weather_station_name": "Station 2",
-    "id": "12000",
+    "code": "12000",
     "location": {
       "type": "Point",
       "coordinates": [

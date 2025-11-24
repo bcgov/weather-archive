@@ -13,7 +13,6 @@ using System.Text.Json;
 namespace PWAApi.Services
 {
     public class WeatherStationService(
-      IHostEnvironment env,
       IAmazonS3 s3Client,
       ILogger<WeatherStationService> logger,
       IOptions<JwtOptions> jwtOptions,
@@ -49,42 +48,64 @@ namespace PWAApi.Services
 
         private async Task<Dictionary<int, WeatherStation>> LoadStationsFromFileAsync()
         {
-            var filePath = Path.Combine(env.ContentRootPath, "Data", "sensors.json");
-            if (!File.Exists(filePath))
+            try
             {
-                logger.LogWarning("Weather stations file not found at {FilePath}", filePath);
+                var bucketName = _s3Options.Bucket;
+                var environment = _s3Options.Prefix;
+                var key = $"{environment}/SAWS.JSON";
+
+                _logger.LogInformation("Loading sensors from S3");
+
+                var response = await _s3Client.GetObjectAsync(bucketName, key);
+                using var reader = new StreamReader(response.ResponseStream);
+                var json = await reader.ReadToEndAsync();
+
+                //var filePath = Path.Combine(env.ContentRootPath, "Data", "sensors.json");
+                //if (!File.Exists(filePath))
+                //{
+                //    logger.LogWarning("Weather stations file not found at {FilePath}", filePath);
+                //    return [];
+                //}
+                //var json = await File.ReadAllTextAsync(filePath);
+                using var doc = JsonDocument.Parse(json);
+                var currentYearDate = DateTime.Now.Year;
+                var stations = doc.RootElement.EnumerateArray()
+                  .Select(el =>
+                  {
+                      // parse coordinates array: [lon, lat]
+                      var coords = el.GetProperty("location")
+                               .GetProperty("coordinates")
+                               .EnumerateArray()
+                               .Select(j => j.GetDouble())
+                               .ToArray();
+
+                      return new WeatherStation
+                      {
+                          Id = int.Parse(el.GetProperty("code").GetString()!),
+                          Name = el.GetProperty("weather_station_name").GetString()!,
+                          Description = el.GetProperty("location_description").GetString()!,
+                          Longitude = coords[0],
+                          Latitude = coords[1],
+                          Elevation = el.GetProperty("elevation").GetInt32(),
+                          DataStartYear = el.GetProperty("dataStartYear").GetInt32(),
+                          DataEndYear = el.GetProperty("dataEndYear").ValueKind == JsonValueKind.Null ? currentYearDate : el.GetProperty("dataEndYear").GetInt32(),
+                          Status = el.GetProperty("status").GetString()!
+                      };
+                  })
+                  .ToDictionary(station => station.Id);
+
+                return stations;
+            }
+            catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                _logger.LogWarning("Sensors file not found in S3");
                 return [];
             }
-
-            var json = await File.ReadAllTextAsync(filePath);
-            using var doc = JsonDocument.Parse(json);
-            var currentYearDate = DateTime.Now.Year;
-            var stations = doc.RootElement.EnumerateArray()
-              .Select(el =>
-              {
-                  // parse coordinates array: [lon, lat]
-                  var coords = el.GetProperty("location")
-                           .GetProperty("coordinates")
-                           .EnumerateArray()
-                           .Select(j => j.GetDouble())
-                           .ToArray();
-
-                  return new WeatherStation
-                  {
-                      Id = int.Parse(el.GetProperty("id").GetString()!),
-                      Name = el.GetProperty("weather_station_name").GetString()!,
-                      Description = el.GetProperty("location_description").GetString()!,
-                      Longitude = coords[0],
-                      Latitude = coords[1],
-                      Elevation = el.GetProperty("elevation").GetInt32(),
-                      DataStartYear = el.GetProperty("dataStartYear").GetInt32(),
-                      DataEndYear = el.GetProperty("dataEndYear").ValueKind == JsonValueKind.Null ? currentYearDate : el.GetProperty("dataEndYear").GetInt32(),
-                      Status = el.GetProperty("status").GetString()!
-                  };
-              })
-              .ToDictionary(station => station.Id);
-
-            return stations;
+            catch (AmazonS3Exception ex)
+            {
+                _logger.LogError(ex, "Error reading sensors file from S3");
+                return [];
+            }
         }
 
         public async Task<IReadOnlyList<WeatherStation>> ListAllAsync()
@@ -147,7 +168,7 @@ namespace PWAApi.Services
         public async Task<Stream?> GetMonthlyDataStreamAsync(int stationId, int year, int month)
         {
             // Validate token and authorization have already occurred via middleware
-            var key = BuildS3Key(stationId, year, month);
+            var key = BuildS3Key(_s3Options.Prefix, stationId, year, month);
             try
             {
                 var request = new GetObjectRequest
@@ -170,7 +191,8 @@ namespace PWAApi.Services
 
         private async Task<IReadOnlyList<int>> GetAvailableMonthsAsync(int stationId, int year)
         {
-                var prefix = $"{stationId}/{year}/";
+                var s3Prefix = _s3Options.Prefix;
+                var prefix = $"{s3Prefix}/{stationId}/{year}/";
                 var request = new ListObjectsV2Request
                 {
                     BucketName = _s3Options.Bucket,
@@ -201,7 +223,7 @@ namespace PWAApi.Services
                 return [.. months.OrderBy(m => m)];
         }
 
-        private static string BuildS3Key(int stationId, int year, int month)
-          => $"{stationId}/{year}/{stationId}_{year}_{month:D2}.csv";
+        private static string BuildS3Key(string prefix, int stationId, int year, int month)
+          => $"{prefix}/{stationId}/{year}/{stationId}_{year}_{month:D2}.csv";
     }
 }
