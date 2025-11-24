@@ -33,6 +33,8 @@ export function createObservationPanel(api, toastManager) {
     const $closeBtn = UI_ELEMENTS.buttons.$close;
     const $detailName = UI_ELEMENTS.details.$name;
     const $detailDescription = UI_ELEMENTS.details.$description;
+    const $detailElevation = UI_ELEMENTS.details.$elevation;
+    const $detailStatus = UI_ELEMENTS.details.$status;
     const $detailLng = UI_ELEMENTS.details.$lng;
     const $detailLat = UI_ELEMENTS.details.$lat;
 
@@ -57,8 +59,15 @@ export function createObservationPanel(api, toastManager) {
         
         $detailName.text(station.name);
         $detailDescription.text(station.description);
+        $detailElevation.text(station.elevation + "m");
+        $detailStatus.text(station.status);
         $detailLng.text(formattedCoords.lng);
         $detailLat.text(formattedCoords.lat);
+        // Clear the select and add default option
+        $yearSelect.empty().append('<option value="" selected>Select Year</option>');
+        for (let year = station.dataEnd; year >= station.dataStart; year--) {
+            $yearSelect.append(`<option value="${year}">${year}</option>`);
+        }
     }
 
     /**
@@ -270,11 +279,11 @@ export function createObservationPanel(api, toastManager) {
 
             currentStation = station;
 
-            // Reset year selection
-            $yearSelect.prop('selectedIndex', 0);
-
             // Update station details
             updateStationDetails(station);
+
+            // Reset year selection
+            $yearSelect.prop('selectedIndex', 0);
 
             // Update UI state
             updateSelectionUI();

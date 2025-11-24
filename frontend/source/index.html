@@ -39,6 +39,7 @@
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
           <div class="navbar-nav">
             <a class="nav-link" href="#">Home</a>
+            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#faqModal">FAQ</a>
           </div>
         </div>
       </div>
@@ -73,7 +74,7 @@
           <h3>Loading Data</h3>
         </div>
       </div>
-      <button id="stationsListBtn" class="btn btn-outline-primary position-absolute top-0 start-0 m-3" aria-controls="sensorList" aria-expanded="true" aria-label="Open Weather Station List">
+      <button id="stationsListBtn" class="btn btn-primary position-absolute top-0 start-0 m-3" aria-controls="sensorList" aria-expanded="true" aria-label="Open Weather Station List">
         <i class="bi bi-list" aria-hidden="true"></i> Weather Stations
       </button>
 
@@ -110,6 +111,14 @@
           <strong>Description:</strong>
           <span id="detailDescription"></span>
         </p>
+        <p>
+          <strong>Elevation:</strong>
+          <span id="detailElevation"></span>
+        </p>
+        <p>
+          <strong>Status:</strong>
+          <span id="detailStatus"></span>
+        </p>
         <p hidden>
           <strong>Longitude:</strong>
           <span id="detailLng"></span>
@@ -124,11 +133,6 @@
               <div class="col">
                 <label for="sensor-year-select" class="form-label visually-hidden">Select Year</label>
                 <select id="sensor-year-select" class="form-select">
-                  <option value="" selected="">Select Year</option>
-                  <option value="2025">2025</option>
-                  <option value="2024">2024</option>
-                  <option value="2023">2023</option>
-                  <option value="2022">2022</option>
                 </select>
               </div>
             </div>
@@ -146,6 +150,507 @@
       </div>
     </aside>
   </main>
+
+  <!-- FAQ Modal -->
+  <div class="modal fade" id="faqModal" tabindex="-1" aria-labelledby="faqModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="faqModalLabel">Frequently Asked Questions</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="accordion" id="faqAccordion">
+            
+            <!-- FAQ 1 -->
+            <div class="accordion-item">
+              <h3 class="accordion-header" id="faq1Heading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#faq1" aria-expanded="false" aria-controls="faq1">
+                  What is the Weather Archive?
+                </button>
+              </h3>
+              <div id="faq1" class="accordion-collapse collapse" aria-labelledby="faq1Heading" 
+                   data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  The Weather Archive is a web application that allows you to browse and download historical 
+                  weather data from weather stations across British Columbia. You can access monthly observation 
+                  data in CSV format for analysis and research purposes.
+                </div>
+              </div>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div class="accordion-item">
+              <h3 class="accordion-header" id="faq2Heading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#faq2" aria-expanded="false" aria-controls="faq2">
+                  How do I download weather data?
+                </button>
+              </h3>
+              <div id="faq2" class="accordion-collapse collapse" aria-labelledby="faq2Heading" 
+                   data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <ol>
+                    <li>Click on a weather station marker on the map, or select one from the "Weather Stations" list</li>
+                    <li>The Observation Data panel will open on the right side</li>
+                    <li>Select a year from the dropdown menu</li>
+                    <li>Click the download icon next to the month you want to download</li>
+                    <li>The CSV file will download to your computer</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            <!-- FAQ 3 -->
+            <div class="accordion-item">
+              <h3 class="accordion-header" id="faq3Heading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#faq3" aria-expanded="false" aria-controls="faq3">
+                  What format is the downloaded data?
+                </button>
+              </h3>
+              <div id="faq3" class="accordion-collapse collapse" aria-labelledby="faq3Heading" 
+                   data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  All weather observation data is provided in CSV (Comma-Separated Values) format. This format 
+                  can be opened in spreadsheet applications like Microsoft Excel, Google Sheets, or imported 
+                  into data analysis tools.
+                </div>
+              </div>
+            </div>
+
+            <!-- FAQ 4 -->
+            <div class="accordion-item">
+              <h3 class="accordion-header" id="faq4Heading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#faq4" aria-expanded="false" aria-controls="faq4">
+                  How do I search for a specific weather station?
+                </button>
+              </h3>
+              <div id="faq4" class="accordion-collapse collapse" aria-labelledby="faq4Heading" 
+                   data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  Click the "Weather Stations" button in the top-left corner of the map to open the station list. 
+                  Use the search box at the top of the list to filter stations by name. You can also browse the 
+                  map and click on any station marker directly.
+                </div>
+              </div>
+            </div>
+
+            <!-- FAQ 5 -->
+            <div class="accordion-item">
+              <h3 class="accordion-header" id="faq5Heading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#faq5" aria-expanded="false" aria-controls="faq5">
+                  What years of data are available?
+                </button>
+              </h3>
+              <div id="faq5" class="accordion-collapse collapse" aria-labelledby="faq5Heading" 
+                   data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  The available years vary by weather station. When you select a station, the year dropdown 
+                  will show only the years for which data is available for that specific station. Some stations 
+                  have data dating back to 1975, while others may have more recent data.
+                </div>
+              </div>
+            </div>
+
+            <!-- FAQ 6 -->
+            <div class="accordion-item">
+              <h3 class="accordion-header" id="faq6Heading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#faq6" aria-expanded="false" aria-controls="faq6">
+                  The application isn't working. What should I do?
+                </button>
+              </h3>
+              <div id="faq6" class="accordion-collapse collapse" aria-labelledby="faq6Heading" 
+                   data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <ul>
+                    <li>Make sure JavaScript is enabled in your browser</li>
+                    <li>Try refreshing the page</li>
+                    <li>Clear your browser cache and reload</li>
+                    <li>Try using a different browser (Chrome, Firefox, Safari, or Edge recommended)</li>
+                    <li>Check your internet connection</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <!-- FAQ 8 -->
+            <div class="accordion-item">
+              <h3 class="accordion-header" id="faq8Heading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq8"
+                  aria-expanded="false" aria-controls="faq8">
+                  What data fields and codes are used in the CSV files?
+                </button>
+              </h3>
+              <div id="faq8" class="accordion-collapse collapse" aria-labelledby="faq8Heading" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+
+                  <div class="alert alert-warning mb-3" role="note">
+                    <small><strong>Note:</strong> Not all observations will be present at a given station, nor are all fields
+                      present in a given report. Only valid data will be displayed in the report.</small>
+                  </div>
+
+                  <div class="alert alert-info mb-3" role="note">
+                    <small><strong>Disclaimer:</strong> Although reasonable care has been exercised in collecting and assembling
+                      these data, the Ministry does not warrant its accuracy and reliability.</small>
+                  </div>
+
+                  <h4 class="h5 mt-4 mb-3">Electronic Weather Stations</h4>
+
+                  <div class="table-responsive">
+                    <table class="table table-sm table-striped table-bordered">
+                      <thead class="table-light">
+                        <tr>
+                          <th style="width: 20%;">Field</th>
+                          <th style="width: 50%;">Name/Definition</th>
+                          <th style="width: 20%;">Notes</th>
+                          <th style="width: 10%;">Units</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong>CODE</strong></td>
+                          <td>Station Code</td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>DATE TIME</strong></td>
+                          <td>Date and time of observation</td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>OBS TYPE</strong></td>
+                          <td>Observation Type</td>
+                          <td>ST - collected at 0600 and 1800<br>
+                            RAWS - automated interval observation collected every hour<br>
+                            INT - Interval Observation supplementing the RAWS/ST observations</td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>MAX TEMP</strong></td>
+                          <td>Maximum temperature since the last standard observation</td>
+                          <td></td>
+                          <td>Degrees C</td>
+                        </tr>
+                        <tr>
+                          <td><strong>PRES TEMP</strong></td>
+                          <td>Present temperature at the time of the observation</td>
+                          <td></td>
+                          <td>Degrees C</td>
+                        </tr>
+                        <tr>
+                          <td><strong>MIN TEMP</strong></td>
+                          <td>Minimum temperature since the last standard observation</td>
+                          <td></td>
+                          <td>Degrees C</td>
+                        </tr>
+                        <tr>
+                          <td><strong>RH</strong></td>
+                          <td>Relative Humidity</td>
+                          <td></td>
+                          <td>Percent</td>
+                        </tr>
+                        <tr>
+                          <td><strong>DEW POINT</strong></td>
+                          <td>Dew Point Temperature</td>
+                          <td>Calculated from the Present Temperature and Relative Humidity</td>
+                          <td>Degrees C</td>
+                        </tr>
+                        <tr>
+                          <td><strong>HRLY PRCP</strong></td>
+                          <td>Hourly Precipitation - change in gauge total since the last hour's observation</td>
+                          <td></td>
+                          <td>mm</td>
+                        </tr>
+                        <tr>
+                          <td><strong>NEW PRCP</strong></td>
+                          <td>New Precipitation - change in gauge total since the last standard observation</td>
+                          <td></td>
+                          <td>mm</td>
+                        </tr>
+                        <tr>
+                          <td><strong>GAUGE TOTAL</strong></td>
+                          <td>The total accumulation of water in the standpipe gauge</td>
+                          <td></td>
+                          <td>mm</td>
+                        </tr>
+                        <tr>
+                          <td><strong>NEW SNOW</strong></td>
+                          <td>New Snow - The change in snowpack height since the last standard observation</td>
+                          <td></td>
+                          <td>cm</td>
+                        </tr>
+                        <tr>
+                          <td><strong>SNOW PACK</strong></td>
+                          <td>Height Of Snow at the time of the observation</td>
+                          <td></td>
+                          <td>cm</td>
+                        </tr>
+                        <tr>
+                          <td><strong>PRCP DET RATIO</strong></td>
+                          <td>The proportion of the last hour that precipitation was detected at the site</td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>WND SPD 1</strong></td>
+                          <td>Average Vector Wind Speed over the last hour - Sensor 1</td>
+                          <td></td>
+                          <td>km/hr</td>
+                        </tr>
+                        <tr>
+                          <td><strong>MAX GUST 1</strong></td>
+                          <td>Maximum Wind Speeds in the last hour - Sensor 1</td>
+                          <td></td>
+                          <td>km/hr</td>
+                        </tr>
+                        <tr>
+                          <td><strong>WND DIR 1</strong></td>
+                          <td>Average Vector Direction in the last hour - Sensor 1</td>
+                          <td></td>
+                          <td>Degrees N</td>
+                        </tr>
+                        <tr>
+                          <td><strong>STD DEV 1</strong></td>
+                          <td>Standard Deviation of the Wind Vector over the last hour - Sensor 1</td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>ATM PRESS</strong></td>
+                          <td>Atmospheric Pressure</td>
+                          <td></td>
+                          <td>mmHg</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <h4 class="h5 mt-4 mb-3">Manual Weather Stations</h4>
+
+                  <div class="table-responsive">
+                    <table class="table table-sm table-striped table-bordered">
+                      <thead class="table-light">
+                        <tr>
+                          <th style="width: 20%;">Field</th>
+                          <th style="width: 50%;">Name/Definition</th>
+                          <th style="width: 20%;">Notes</th>
+                          <th style="width: 10%;">Units</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong>CODE</strong></td>
+                          <td>Station Code</td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>DATE TIME</strong></td>
+                          <td>Date and time of observation</td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>OBS TYPE</strong></td>
+                          <td>Observation Type</td>
+                          <td>Standard Observations are taken twice daily. In the morning between 0530-0730hrs and in the evening
+                            between 1530-1800hrs. <br> <br>Interval observations are made upon request if weather conditions warrant extra readings.</td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>SKY COND</strong></td>
+                          <td>Sky Condition</td>
+                          <td>CL = clear, OV = overcast, BR = broken, SC = scattered, OB = obscured, CL/H = clear/haze, SC/H =
+                            scattered/haze, BR/H = broken/haze</td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>PRCP TYPE</strong></td>
+                          <td>Precipitation Type</td>
+                          <td>NIL = none, * = snow, R = rain, */R = snow/rain, FR = freezing rain</td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>PRCP RATE</strong></td>
+                          <td>Precipitation Rate</td>
+                          <td><strong>For Snow:</strong> VL = very light (&lt;1 cm/hr), L = light (1 cm/hr), M = moderate (2 cm/hr),
+                            H = heavy (&gt;3 cm/hr)<br>
+                            <strong>For Rain:</strong> VL = very light (&lt;1 mm/hr), L = light (1 mm/hr), M = moderate (2 mm/hr), H
+                            = heavy (&gt;3 mm/hr)
+                          </td>
+                          <td>Snow in cm, Rain in mm</td>
+                        </tr>
+                        <tr>
+                          <td><strong>MAX TEMP</strong></td>
+                          <td>Maximum temperature since the last standard observation</td>
+                          <td></td>
+                          <td>Degrees C</td>
+                        </tr>
+                        <tr>
+                          <td><strong>PRES TEMP</strong></td>
+                          <td>Present temperature at the time of the observation</td>
+                          <td></td>
+                          <td>Degrees C</td>
+                        </tr>
+                        <tr>
+                          <td><strong>MIN TEMP</strong></td>
+                          <td>Minimum temperature since the last standard observation</td>
+                          <td></td>
+                          <td>Degrees C</td>
+                        </tr>
+                        <tr>
+                          <td><strong>THERM TRND</strong></td>
+                          <td>Thermograph Trends</td>
+                          <td>FR = Falling rapidly (&gt;5 deg in last 3 hours), FS = Falling slowly (1-5 deg in last 3 hours), ST =
+                            Steady (&lt;1 deg in last 3 hours), RS = Rising slowly (1-5 deg in last 3 hours), RR = Rising rapidly
+                            (&gt;5 deg in last 3 hours)</td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>RH</strong></td>
+                          <td>Relative Humidity</td>
+                          <td></td>
+                          <td>Percent</td>
+                        </tr>
+                        <tr>
+                          <td><strong>NEW SNOW</strong></td>
+                          <td>This is the accumulation of newly fallen snow since the last standard observation</td>
+                          <td></td>
+                          <td>cm</td>
+                        </tr>
+                        <tr>
+                          <td><strong>INT SNOW</strong></td>
+                          <td>Interval Snow - Amount of snow that has accumulated on the interval snow board</td>
+                          <td></td>
+                          <td>cm</td>
+                        </tr>
+                        <tr>
+                          <td><strong>STORM SNOW</strong></td>
+                          <td>Storm Snow - The amount (rounded cm) of snow since the beginning of a snow storm that has accumulated
+                            on a storm snow board</td>
+                          <td></td>
+                          <td>cm</td>
+                        </tr>
+                        <tr>
+                          <td><strong>STORM CLEARED</strong></td>
+                          <td>Flag indicating that the Storm Board was cleared. This indicates that the observer felt that the storm
+                            was over.</td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>SNOW PACK</strong></td>
+                          <td>This is the current depth of snow</td>
+                          <td></td>
+                          <td>cm</td>
+                        </tr>
+                        <tr>
+                          <td><strong>SURF COND</strong></td>
+                          <td>Surface Condition</td>
+                          <td>SH = surface hoar, IC = ice crust, WE = wind effect, New = new, Oth = other, Old = old, Sl = slush
+                          </td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>PRCP GAUGE</strong></td>
+                          <td>Precipitation Gauge - The current total depth of water contained in a precipitation gauge,
+                            irrespective of the form of the precipitation</td>
+                          <td></td>
+                          <td>mm</td>
+                        </tr>
+                        <tr>
+                          <td><strong>OLD GAUGE</strong></td>
+                          <td>Old Gauge - Precipitation total as read from previous "Precipitation Gauge Total" reading</td>
+                          <td></td>
+                          <td>mm</td>
+                        </tr>
+                        <tr>
+                          <td><strong>NEW PRCP</strong></td>
+                          <td>New Precipitation - The total precipitation, irrespective of form, to fall since the last standard
+                            observation (in mm). This is the difference between the current Precipitation Gauge Total and the
+                            Precipitation Gauge Total at the last standard observation (Precipitation Gauge Total Old). Minus sign
+                            is included if it is a negative value.</td>
+                          <td></td>
+                          <td>mm</td>
+                        </tr>
+                        <tr>
+                          <td><strong>FOOT PEN</strong></td>
+                          <td>Foot Penetration - The total depth of water contained in a precipitation gauge, irrespective of the
+                            form of the precipitation, recorded at the last weather observation</td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>WND SPD EST</strong></td>
+                          <td>Wind Speed Estimated</td>
+                          <td>C = calm, L = light, M = moderate, S = strong, E = extreme</td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>WND SPD MEAS</strong></td>
+                          <td>Wind Speed Measured</td>
+                          <td></td>
+                          <td>Km/Hr</td>
+                        </tr>
+                        <tr>
+                          <td><strong>WND DIR</strong></td>
+                          <td>Wind Direction</td>
+                          <td></td>
+                          <td>Degrees N</td>
+                        </tr>
+                        <tr>
+                          <td><strong>ATM PRESSURE</strong></td>
+                          <td>Atmospheric Pressure</td>
+                          <td></td>
+                          <td>mmHg</td>
+                        </tr>
+                        <tr>
+                          <td><strong>PRESS TREND</strong></td>
+                          <td>Atmospheric Pressure Trend</td>
+                          <td>FR = Falling rapidly (&gt;5 deg in last 3 hours), FS = Falling slowly (1-5 deg in last 3 hours), ST =
+                            Steady (&lt;1 deg in last 3 hours), RS = Rising slowly (1-5 deg in last 3 hours), RR = Rising rapidly
+                            (&gt;5 deg in last 3 hours)</td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>AVAL OBS</strong></td>
+                          <td>Avalanche Observed</td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>AVAL ON RD</strong></td>
+                          <td>Avalanche on Road Observed</td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td><strong>COMMENTS</strong></td>
+                          <td>Comments</td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="vendor/js/jquery-3.6.0.min.js?v=1752516480"></script>
   <script src="vendor/js/bootstrap.bundle.min.js?v=1752516480"></script>

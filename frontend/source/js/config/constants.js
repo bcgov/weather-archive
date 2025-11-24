@@ -56,6 +56,8 @@ export const UI_ELEMENTS = {
     details: {
         $name: $('#detailName'),
         $description: $('#detailDescription'),
+        $elevation: $('#detailElevation'),
+        $status: $('#detailStatus'),
         $lng: $('#detailLng'),
         $lat: $('#detailLat')
     }

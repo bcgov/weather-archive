@@ -36,8 +36,12 @@ export function createWeatherStation(rawData) {
         id: rawData.id,
         name: rawData.name || `Sensor ${rawData.id}`,
         description: rawData.description || 'No description available',
+        elevation: rawData.elevation,
+        status: rawData.status,
         longitude: rawData.longitude,
         latitude: rawData.latitude,
+        dataStart: rawData.dataStartYear,
+        dataEnd: rawData.dataEndYear,
 
         /**
          * Gets the coordinates as an array [longitude, latitude].
