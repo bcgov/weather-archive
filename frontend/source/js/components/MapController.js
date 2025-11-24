@@ -5,7 +5,7 @@
 
 
 import { MAP_CONFIG, CONFIG, UI_ELEMENTS } from '../config/constants.js';
-import { MAP_STYLES } from '../config/mapStyles.js';
+import { MAP_STYLES } from '../config/MapStyles.js';
 import { createLoader } from '../core/loaderManager.js';
 /**
  * Creates a MapController for managing OpenLayers map functionality.
