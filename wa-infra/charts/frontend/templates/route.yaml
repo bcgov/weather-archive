@@ -5,7 +5,7 @@ metadata:
   labels: {{ include "pwa-infra.labels" . | nindent 4 }}
   annotations:
   {{- if .Values.route.iprestricted }}
-    haproxy.router.openshift.io/ip_whitelist: {{.Values.route.ipallowlist }}
+    haproxy.router.openshift.io/ip_whitelist: {{ .Values.route.ipallowlist | join " " | quote }}
   {{- end}}
 spec:
   host: {{ .Values.route.host }}

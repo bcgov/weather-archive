@@ -53,6 +53,8 @@ spec:
                 secretKeyRef:
                   name: {{.Values.deployment.env.s3creds}}
                   key: secret-key
+            - name: S3__Prefix
+              value: {{ .Values.backend.s3Prefix | quote }}
           readinessProbe:
             httpGet:
               path: /health/ready

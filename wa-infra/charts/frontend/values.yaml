@@ -1,6 +1,9 @@
 fullnameOverride: wa-frontend
 nameOverride: wa-frontend
-
+backendConfig:
+  name: wa-backend
+environment: production
+headerColor: "#003366"
 replicaCount: 1
 
 image:
@@ -19,4 +22,8 @@ deployment:
 route:
   host: wa.apps.silver.devops.gov.bc.ca
   iprestricted: false
-  ipallowlist: 142.34.53.0/24 142.22.0.0/15 142.24.0.0/13 142.32.0.0/13 #BCGov range only
+  ipallowlist:
+    - "142.34.53.0/24"
+    - "142.22.0.0/15"
+    - "142.24.0.0/13" 
+    - "142.32.0.0/13"
