@@ -84,21 +84,21 @@ export function createWeatherStationAPI(baseUrl, toastManager) {
          * @param {AbortSignal} [signal] - Optional abort signal for cancellation
          * @returns {Promise<Object[]>} Array of file metadata objects
          */
-        async fetchObservationFiles(sensorId, year, signal = null) {
+        async fetchObservationFiles(sensor, year, signal = null) {
             try {
                 // Validate inputs
-                const sensorIdNum = Number(sensorId);
+                const sensorIdNum = Number(sensor.id);
                 const yearNum = Number(year);
 
                 if (!validateSensorId(sensorIdNum)) {
                     throw new Error('Invalid sensor ID');
                 }
 
-                if (!validateYear(yearNum)) {
+                if (!validateYear(yearNum, sensor.dataStart, sensor.dataEnd)) {
                     throw new Error('Invalid year');
                 }
 
-                const url = `weatherstations/${sensorId}/years/${year}`;
+                const url = `weatherstations/${sensor.id}/years/${year}`;
                 const response = await makeRequest(url, {
                     signal
                 });

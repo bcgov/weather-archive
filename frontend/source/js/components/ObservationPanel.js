@@ -105,18 +105,18 @@ export function createObservationPanel(api, toastManager) {
             return;
         }
 
-        files.forEach((fileData) => {
-            try {
+        try {
+            files.forEach((fileData) => {
                 storeToken(fileData.year, fileData.month, fileData.token);
                 const observationData = createObservationData(fileData);
                 const $listItem = observationData.createListItem();
                 $dataList.append($listItem);
-            } catch (error) {
-                toastManager.error('Failed to load full observation data. Please reselect the year.');
-            }
-        });
-
-        obsLoader.success();
+            });
+            obsLoader.success();
+        } catch (error) {
+            toastManager.error('Failed to load full observation data. Please reselect the year.');
+            obsLoader.error('Error loading observation data');
+        }
     }
 
     /**
@@ -145,7 +145,7 @@ export function createObservationPanel(api, toastManager) {
 
         try {
             const files = await api.fetchObservationFiles(
-                currentStation.id, 
+                currentStation, 
                 year, 
                 requestController.signal
             );

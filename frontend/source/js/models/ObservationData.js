@@ -4,7 +4,6 @@
  */
 
 import { getMonthName } from '../utils/formatters.js';
-import { validateYear } from '../utils/validation.js';
 
 /**
  * Creates an ObservationData model instance for file metadata and display.
@@ -26,10 +25,6 @@ export function createObservationData(fileData) {
 
 
     const month = parseInt(fileData.month, 10);
-
-    if (!validateYear(fileData.year)) {
-        throw new Error(`Invalid year: ${fileData.year}`);
-    }
 
     if (isNaN(month) || month < 1 || month > 12) {
         throw new Error(`Invalid month: ${fileData.month}`);

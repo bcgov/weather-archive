@@ -22,10 +22,10 @@ export function validateSensorId(id) {
  * @param {number|string} year - Year to validate
  * @returns {boolean} True if valid
  */
-export function validateYear(year) {
+export function validateYear(year, startYear, endYear) {
     const numYear = parseInt(year, 10);
-    const currentYear = new Date().getFullYear();
     return Number.isInteger(numYear) &&
-        numYear <= currentYear;
+        numYear >= startYear &&
+        numYear <= endYear;
 }
 
