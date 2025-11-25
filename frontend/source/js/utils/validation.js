@@ -26,7 +26,6 @@ export function validateYear(year) {
     const numYear = parseInt(year, 10);
     const currentYear = new Date().getFullYear();
     return Number.isInteger(numYear) &&
-        numYear >= CONFIG.YEAR_RANGE.MIN &&
         numYear <= currentYear;
 }
 
