@@ -1,6 +1,7 @@
 backend:
   fullnameOverride: wa-test-backend
   nameOverride: wa-test-backend
+  s3Prefix: TST
 
 frontend:
   fullnameOverride: wa-test-frontend
