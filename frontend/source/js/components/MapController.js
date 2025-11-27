@@ -191,6 +191,18 @@ export function createMapController(containerId, toastManager) {
 
         map.on('pointermove', handlePointerMove);
         map.on('singleclick', handleMapClick);
+        // Clear hover when pointer exits the map viewport
+        map.getViewport().addEventListener('mouseout', (e) => {
+            // Only clear if we're actually leaving the viewport (not going to a child element)
+            if (!e.relatedTarget || !map.getViewport().contains(e.relatedTarget)) {
+                if (lastHoveredFeature && lastHoveredFeature !== selectedFeature) {
+                    lastHoveredFeature.setStyle(MAP_STYLES.default);
+                    lastHoveredFeature = null;
+                }
+                hideTooltip();
+                map.getTargetElement().style.cursor = '';
+            }
+        });
         map.getView().on('change:resolution', () => {
             hideTooltip();
         });
