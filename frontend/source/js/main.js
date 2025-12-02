@@ -34,7 +34,7 @@ function createWeatherApp() {
      * @param {Object} station - WeatherStation instance
      * @param {boolean} fromMap - Whether selection came from map interaction
      */
-    function handleStationSelection(station, fromMap = false) {
+    function handleStationSelection(station, fromMap = false, coLocatedStations = []) {
         if (!station) {
             return;
         }
@@ -51,9 +51,8 @@ function createWeatherApp() {
 
         // Highlight station in list
         sensorList.highlightStation(station);
-
         // Show observation panel
-        observationPanel.showForStation(station);
+        observationPanel.showForStation(station, coLocatedStations);
     }
 
     /**
@@ -104,13 +103,18 @@ function createWeatherApp() {
      */
     function setupComponentCommunication() {
         // Map selection events
-        mapController.onFeatureSelected((station, fromMap) => {
-            handleStationSelection(station, fromMap);
+        mapController.onFeatureSelected((station, fromMap, coLocatedStations) => {
+            handleStationSelection(station, fromMap, coLocatedStations);
         });
-
+        // Map Co-Located station click events
+        observationPanel.onStationSwitched((station) => {
+            sensorList.clearFilter();
+            mapController.selectStation(station);
+        });
         // Sensor list click events
         sensorList.onItemClicked((station) => {
-            handleStationSelection(station, false);
+            mapController.selectStation(station);
+            //handleStationSelection(station, false);
         });
 
         // Observation panel close events

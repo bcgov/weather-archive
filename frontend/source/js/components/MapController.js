@@ -221,7 +221,37 @@ export function createMapController(containerId, toastManager) {
             newFeature.setStyle(MAP_STYLES.active);
         }
     }
+    /**
+     * Finds all sensors co-located at the same coordinates.
+     * @param {Object} station - WeatherStation instance to find co-located sensors for
+     * @returns {Object[]} Array of co-located WeatherStation instances
+     */
+    function findColocatedSensors(station) {
+        if (!station) return [];
 
+        const colocated = [];
+        
+        const stationCoords = station.getFormattedCoordinates();
+
+        // Check all features in the map
+        featureMap.forEach((feature) => {
+            const featureSensor = feature.get('sensorData');
+            
+            if (!featureSensor || featureSensor.id === station.id) {
+                return; // Skip if no sensor data or same sensor
+            }
+
+            const featureCoords = featureSensor.getFormattedCoordinates();
+
+            // String comparison (toFixed returns strings, so exact matching)
+            if (featureCoords.lng === stationCoords.lng && 
+                featureCoords.lat === stationCoords.lat) {
+                colocated.push(featureSensor);
+            }
+        });
+
+        return colocated;
+    }
     /**
      * Selects a feature and updates the map view.
      * @param {ol.Feature} feature - The feature to select
@@ -245,7 +275,7 @@ export function createMapController(containerId, toastManager) {
         // Trigger selection callback
         if (onFeatureSelected) {
             const sensorData = feature.get('sensorData');
-            onFeatureSelected(sensorData, fromMapClick);
+            onFeatureSelected(sensorData, fromMapClick, findColocatedSensors(sensorData));
         }
     }
 

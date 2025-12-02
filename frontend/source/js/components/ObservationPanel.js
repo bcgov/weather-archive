@@ -47,12 +47,13 @@ export function createObservationPanel(api, toastManager) {
 
     // Event callbacks
     let onPanelClosed = null;
+    let onStationSwitched = null;
 
     /**
      * Updates the sensor detail display with station data.
      * @param {Object} station - WeatherStation instance
      */
-    function updateStationDetails(station) {
+    function updateStationDetails(station, colocatedStations = []) {
         if (!station) return;
 
         const formattedCoords = station.getFormattedCoordinates();
@@ -68,6 +69,9 @@ export function createObservationPanel(api, toastManager) {
         for (let year = station.dataEnd; year >= station.dataStart; year--) {
             $yearSelect.append(`<option value="${year}">${year}</option>`);
         }
+        // Add co-located stations info if present
+        renderColocatedStationsInfo(colocatedStations);
+        
     }
 
     /**
@@ -158,7 +162,65 @@ export function createObservationPanel(api, toastManager) {
             obsLoader.error('Error loading observation data');
         }
     }
-
+    /**
+     * Handles click on a co-located station badge.
+     * @param {Object} station - WeatherStation instance to switch to
+     */
+    function handleColocatedStationClick(station) {
+        // Switch to the clicked co-located station
+        // This will trigger the full selection flow through the map controller
+        if (onStationSwitched) {
+            onStationSwitched(station);
+        }
+    }
+    /**
+     * Renders information about co-located stations with clickable badges.
+     * @param {Object[]} colocated - Array of co-located WeatherStation instances
+     */
+    function renderColocatedStationsInfo(colocatedStations) {
+        if(colocatedStations.length == 0){
+            removeColocatedStationsInfo();
+            return;
+        }
+        // Check if info section already exists
+        let $infoSection = $('#colocated-stations-info');
+        
+        if ($infoSection.length === 0) {
+            // Create new info section after description
+            $infoSection = $('<p>')
+                .attr('id', 'colocated-stations-info')
+                .insertAfter($detailDescription.parent());
+        }
+        
+        // Clear existing content
+        $infoSection.empty();
+        
+        // Add label
+        $('<strong>').text('Co-located Stations:').appendTo($infoSection);
+        $infoSection.append(' ');
+        
+        // Create badge container
+        const $badgeContainer = $('<span>')
+            .addClass('d-inline-flex flex-wrap gap-2')
+            .appendTo($infoSection);
+        
+        // Create clickable badge for each co-located station
+        colocatedStations.forEach(station => {
+            const $badge = $('<button>')
+                .addClass('badge border-0 bg-primary')
+                .attr({
+                    'type': 'button',
+                    'data-station-id': station.id,
+                    'aria-label': `Switch to ${station.name}`
+                })
+                .text(station.name)
+                .on('click', function() {
+                    handleColocatedStationClick(station);
+                });
+            
+            $badgeContainer.append($badge);
+        });
+    }
     /**
      * Handles download button clicks.
      * @param {Event} event - The click event
@@ -221,14 +283,18 @@ export function createObservationPanel(api, toastManager) {
         $detailsContents.scrollTop(0);
         toggleExpandButton();
     }
-
+    /**
+     * Removes co-located stations info section.
+     */
+    function removeColocatedStationsInfo() {
+        $('#colocated-stations-info').remove();
+    }
     /**
      * Closes the observation panel and resets state.
      */
     function closePanel() {
         $panel.removeClass('open expanded');
         resetExpandButton();
-
         // Reset state
         currentStation = null;
         $yearSelect.prop('selectedIndex', 0);
@@ -271,8 +337,9 @@ export function createObservationPanel(api, toastManager) {
         /**
          * Shows the panel for a selected weather station.
          * @param {Object} station - WeatherStation instance
+         * @param {Object} coLocatedStations - Realted WeatherStation instances
          */
-        showForStation(station) {
+        showForStation(station, coLocatedStations) {
             if (!station || typeof station.getFormattedCoordinates !== 'function') {
                 throw new Error('Valid WeatherStation instance required');
             }
@@ -280,7 +347,7 @@ export function createObservationPanel(api, toastManager) {
             currentStation = station;
 
             // Update station details
-            updateStationDetails(station);
+            updateStationDetails(station, coLocatedStations);
 
             // Reset year selection
             $yearSelect.prop('selectedIndex', 0);
@@ -306,7 +373,13 @@ export function createObservationPanel(api, toastManager) {
         onPanelClosed(callback) {
             onPanelClosed = callback;
         },
-
+        /**
+         * Sets callback for when a co-located station is clicked.
+         * @param {Function} callback - Callback function (station) => void
+         */
+        onStationSwitched(callback) {
+            onStationSwitched = callback;
+        },
         /**
          * Checks if the panel is currently open.
          * @returns {boolean} True if panel is open

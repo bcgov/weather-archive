@@ -45,16 +45,34 @@ export function createSensorList(containerSelector, searchSelector, listOverlayS
         if (!station || typeof station.id === 'undefined') {
             throw new Error('Valid weather station required');
         }
-
-        return $('<li>')
-            .addClass('list-group-item list-group-item-action text-decoration-none')
+        const $listItem = $('<li>')
+            .addClass('list-group-item list-group-item-action text-decoration-none d-flex align-items-center')
             .attr({
                 'data-id': station.id,
                 'role': 'option',
                 'tabindex': '0',
                 'aria-label': `Weather station: ${station.name}`
-            })
-            .text(station.name);
+            });
+
+        // Add station name
+        $('<span>')
+            .text(station.name)
+            .appendTo($listItem);
+
+        // Add status indicator pill for inactive stations
+        if (station.status && station.status.toLowerCase() !== 'active') {
+            const $statusPill = $('<span>')
+                .addClass('badge rounded-pill bg-warning p-1 mx-2')
+                .attr('aria-hidden', 'true');
+
+            $('<span>')
+                .addClass('visually-hidden')
+                .text('Decommissioned')
+                .appendTo($statusPill);
+
+            $listItem.append($statusPill);
+        }
+        return $listItem;
     }
 
     /**
@@ -65,10 +83,16 @@ export function createSensorList(containerSelector, searchSelector, listOverlayS
         const query = rawQuery
             .toLowerCase()
             .substring(0, CONFIG.MAX_SEARCH_LENGTH);
-
+        
         $container.find('li').each(function () {
-            const stationName = $(this).text().toLowerCase();
-            $(this).toggle(stationName.includes(query));
+            const $item = $(this);
+            // Get only the station name (first span), not the status badge
+            const stationName = $item.find('span').first().text().toLowerCase();
+            if (stationName.includes(query)) {
+                $item.removeClass('d-none');
+            } else {
+                $item.addClass('d-none');
+            }
         });
     };
 
@@ -201,7 +225,7 @@ export function createSensorList(containerSelector, searchSelector, listOverlayS
          */
         clearFilter() {
             $searchInput.val('');
-            $container.find('li').show();
+            $container.find('li').removeClass('d-none');
         },
 
         /**

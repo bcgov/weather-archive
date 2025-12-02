@@ -34,7 +34,7 @@ export function createWeatherStation(rawData) {
     // Create the weather station object
     const station = {
         id: rawData.id,
-        name: rawData.name || `Sensor ${rawData.id}`,
+        name: rawData.name.toUpperCase() || `Sensor ${rawData.id}`,
         description: rawData.description || 'No description available',
         elevation: rawData.elevation,
         status: rawData.status,
