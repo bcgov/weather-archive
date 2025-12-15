@@ -18,3 +18,8 @@ frontend:
       - "142.22.0.0/15"
       - "142.24.0.0/13" 
       - "142.32.0.0/13"
+jobs:
+  fullnameOverride: wa-dev-jobs
+  nameOverride: wa-dev-jobs
+  s3:
+    prefix: "DEV"

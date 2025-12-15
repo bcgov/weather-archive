@@ -1,0 +1,67 @@
+fullnameOverride: wa-jobs
+nameOverride: wa-jobs
+
+persistence:
+  enabled: true
+  storageClassName: netapp-file-standard
+  accessMode: ReadWriteMany
+  size: 100Mi
+
+# CronJob settings
+cronjob:
+  enabled: true
+  
+  # Schedule (cron format)
+  schedule: "30 2 * * *"
+  
+  # Timezone for schedule
+  timeZone: "America/Vancouver"
+  
+  # Job history limits
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  
+  # Concurrency policy: Allow, Forbid, Replace
+  concurrencyPolicy: Forbid
+  
+  # Backoff limit for failed jobs
+  backoffLimit: 3
+
+# Python image settings
+image:
+  repository: registry.redhat.io/ubi8/python-311
+  tag: latest
+  pullPolicy: Always
+
+# S3 Configuration
+s3:
+  # Name of existing secret with S3 credentials
+  credentialsSecretName: s3-credentials
+  
+  # Secret keys for S3 credentials
+  secretKeys:
+    endpointUrl: endpoint-url
+    bucket: bucket-name
+    accessKey: access-key
+    secretKey: secret-key
+  
+  # S3 prefix
+  prefix: "DEV"
+  
+  # File names in S3
+  file1Key: "SAWS.JSON"
+  file2Key: "SAWSx.JSON"
+
+# Output settings
+output:
+  directory: "/data"
+  filename: "stations.json"
+
+# Resource limits
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
