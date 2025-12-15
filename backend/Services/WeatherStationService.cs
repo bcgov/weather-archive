@@ -83,7 +83,7 @@ namespace PWAApi.Services
                       {
                           Id = int.Parse(el.GetProperty("code").GetString()!),
                           Name = el.GetProperty("weather_station_name").GetString()!,
-                          Description = el.GetProperty("location_description").GetString()!,
+                          Description = el.GetProperty("location_description").GetString(),
                           Longitude = coords[0],
                           Latitude = coords[1],
                           Elevation = el.GetProperty("elevation").GetInt32(),
