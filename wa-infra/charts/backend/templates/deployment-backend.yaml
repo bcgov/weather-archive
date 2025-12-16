@@ -55,6 +55,9 @@ spec:
                   key: secret-key
             - name: S3__Prefix
               value: {{ .Values.s3Prefix | quote }}
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
           readinessProbe:
             httpGet:
               path: /health/ready
@@ -94,6 +97,10 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 30
       imagePullSecrets: []
+      volumes:
+          - name: data
+            persistentVolumeClaim:
+              claimName: {{ .Values.pvc }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
