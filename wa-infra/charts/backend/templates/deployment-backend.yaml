@@ -55,6 +55,15 @@ spec:
                   key: secret-key
             - name: S3__Prefix
               value: {{ .Values.s3Prefix | quote }}
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
           volumeMounts:
             - name: data
               mountPath: /app/data

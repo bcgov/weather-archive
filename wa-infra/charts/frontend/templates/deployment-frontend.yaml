@@ -29,11 +29,19 @@ spec:
             - name: nginx-config
               mountPath: /etc/nginx/nginx.conf
               subPath: nginx.conf
+            - name: trusted-proxies
+              mountPath: /etc/nginx/conf.d/trusted-proxies.conf
+              subPath: trusted-proxies.conf
           env:
             - name: ENVIRONMENT
               value: {{ .Values.environment | quote }}
             - name: HEADER_COLOR
               value: {{ .Values.headerColor | quote }}
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
           readinessProbe:
             httpGet:
               path: /health/
@@ -64,6 +72,9 @@ spec:
         - name: nginx-config
           configMap:
             name: {{ template "pwa-infra.fullname" . }}-nginx-config
+        - name: trusted-proxies
+          secret:
+            secretName: {{ include "pwa-infra.fullname" . }}-nginx-trusted-proxies
       imagePullSecrets: []
   strategy:
     type: RollingUpdate

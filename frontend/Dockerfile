@@ -6,6 +6,9 @@ COPY ./frontend/source /usr/share/nginx/html
 # Copy nginx configuration
 COPY ./frontend/nginx.conf /etc/nginx/nginx.conf
 
+# Copy security-headers configuration
+COPY ./frontend/security-headers.conf /etc/nginx/conf.d/security-headers.conf
+
 COPY ./frontend/entrypoint.sh /
 
 # Expose port 8081
