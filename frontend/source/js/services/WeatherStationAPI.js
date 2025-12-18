@@ -168,7 +168,7 @@ export function createWeatherStationAPI(baseUrl, toastManager) {
                 const downloadUrl = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = downloadUrl;
-                link.download = `${sensorId}_${year}_${month}.csv`;
+                link.download = `${sensorId}_${year}_${month.toString().padStart(2, '0')}.csv`;
 
                 document.body.appendChild(link);
                 link.click();
