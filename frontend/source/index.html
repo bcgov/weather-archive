@@ -86,11 +86,15 @@
         </div>
         <div class="p-2">
           <input id="stationSearchInput" class="form-control form-control-sm" placeholder="Search Weather Stations" aria-label="Search Weather Stations"/>
-          <div class="d-flex align-items-center gap-2 mt-2 small text-muted">
-            <span aria-hidden="true" class="badge rounded-pill bg-warning p-1">
-              <span class="visually-hidden">Decommissioned</span> 
+          <div class="d-flex align-items-center gap-3 mt-2 small text-muted" role="list" aria-label="Status legend">
+            <span class="d-flex align-items-center gap-1" role="listitem">
+              <i class="bi bi-dash-circle-fill text-warning" aria-hidden="true"></i>
+              <span>Inactive</span>
             </span>
-            <span> = Decommissioned</span>
+            <span class="d-flex align-items-center gap-1" role="listitem">
+              <i class="bi bi-stop-circle-fill text-danger" aria-hidden="true"></i>
+              <span>Decommissioned</span>
+            </span>
           </div>
         </div>
         <ul id="sensorListGroup" class="list-group list-group-flush overflow-auto" style="max-height: 50vh;" role="listbox" aria-labelledby="sensorListLabel"></ul>

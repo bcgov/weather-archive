@@ -59,18 +59,42 @@ export function createSensorList(containerSelector, searchSelector, listOverlayS
             .text(station.name)
             .appendTo($listItem);
 
-        // Add status indicator pill for inactive stations
+        // Add status indicator pill for stations
         if (station.status && station.status.toLowerCase() !== 'active') {
-            const $statusPill = $('<span>')
-                .addClass('badge rounded-pill bg-warning p-1 mx-2')
-                .attr('aria-hidden', 'true');
-
-            $('<span>')
-                .addClass('visually-hidden')
-                .text('Decommissioned')
-                .appendTo($statusPill);
-
-            $listItem.append($statusPill);
+            const statusConfig = {
+                'inactive': {
+                    label: 'Inactive',
+                    iconClass: 'bi bi-dash-circle-fill text-warning'
+                },
+                'decommissioned': {
+                    label: 'Decommissioned',
+                    iconClass: 'bi bi-stop-circle-fill text-danger'
+                }
+            };
+            
+            const status = station.status.toLowerCase();
+            const config = statusConfig[status];
+            
+            if (config) {
+                const $statusPill = $('<span>')
+                    .addClass('badge rounded-pill bg-white mx-2')
+                    .attr({
+                        'role': 'status',
+                        'aria-label': config.label
+                    })
+                    .append(
+                        $('<i>')
+                            .addClass(config.iconClass)
+                            .attr('aria-hidden', 'true')
+                    )
+                    .append(
+                        $('<span>')
+                            .addClass('visually-hidden')
+                            .text(config.label)
+                    );
+                
+                $listItem.append($statusPill);
+            }
         }
         return $listItem;
     }
