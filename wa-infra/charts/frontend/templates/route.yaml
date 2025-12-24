@@ -4,9 +4,10 @@ metadata:
   name: {{ template "pwa-infra.fullname" . }}
   labels: {{ include "pwa-infra.labels" . | nindent 4 }}
   annotations:
-  {{- if .Values.route.iprestricted }}
+    haproxy.router.openshift.io/disable_cookies: 'true'
+    {{- if .Values.route.iprestricted }}
     haproxy.router.openshift.io/ip_whitelist: {{ .Values.route.ipallowlist | join " " | quote }}
-  {{- end}}
+    {{- end}}
 spec:
   host: {{ .Values.route.host }}
   to:

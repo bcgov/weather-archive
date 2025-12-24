@@ -23,6 +23,19 @@ spec:
       backoffLimit: {{ .Values.cronjob.backoffLimit }}
       template:
         metadata:
+          annotations:
+            vault.hashicorp.com/agent-inject: 'true'
+            vault.hashicorp.com/agent-pre-populate-only: 'true'
+            vault.hashicorp.com/auth-path: auth/k8s-silver
+            vault.hashicorp.com/namespace: platform-services
+            vault.hashicorp.com/role: {{ .Values.deployment.vault.role }}
+            vault.hashicorp.com/agent-inject-secret-secrets.env: {{ .Values.deployment.vault.role }}/{{ .Values.deployment.vault.path }}
+            vault.hashicorp.com/agent-inject-template-secrets.env: |
+              {{`{{- with secret `}}"{{ .Values.deployment.vault.role }}/{{ .Values.deployment.vault.path }}"{{` }}
+              {{- range $k, $v := .Data.data }}
+              export {{ $k }}="{{ $v }}"
+              {{- end }}
+              {{- end `}} }}
           labels:
             {{- include "pwa-infra.selectorLabels" . | nindent 12 }}
             component: cronjob
@@ -38,28 +51,8 @@ spec:
               echo "Installing boto3..."
               pip install --no-cache-dir boto3
               echo "Running merge script..."
-              python /scripts/merge_job.py
+              . /vault/secrets/secrets.env && python /scripts/merge_job.py
             env:
-            - name: S3__ServiceUrl
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.s3.credentialsSecretName }}
-                  key: {{ .Values.s3.secretKeys.endpointUrl }}
-            - name: S3__Bucket
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.s3.credentialsSecretName }}
-                  key: {{ .Values.s3.secretKeys.bucket }}
-            - name: S3__AccessKey
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.s3.credentialsSecretName }}
-                  key: {{ .Values.s3.secretKeys.accessKey }}
-            - name: S3__SecretKey
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.s3.credentialsSecretName }}
-                  key: {{ .Values.s3.secretKeys.secretKey }}
             - name: S3__Prefix
               value: {{ .Values.s3.prefix | quote }}
             - name: FILE1_KEY
@@ -77,6 +70,7 @@ spec:
               mountPath: {{ .Values.output.directory }}
             resources:
               {{- toYaml .Values.resources | nindent 14 }}
+          serviceAccountName: {{ .Values.deployment.vault.serviceAccount }}
           volumes:
           - name: script
             configMap:

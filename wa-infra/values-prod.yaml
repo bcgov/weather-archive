@@ -1,0 +1,35 @@
+backend:
+  fullnameOverride: wa-prod-backend
+  nameOverride: wa-prod-backend
+  s3Prefix: PRD
+  pvc: wa-prod-jobs-data
+  deployment:
+    vault:
+      role: "d78a41-prod"
+      path: "prod"
+      serviceAccount: "d78a41-vault"
+frontend:
+  fullnameOverride: wa-prod-frontend
+  nameOverride: wa-prod-frontend
+  environment: production
+  headerColor: "#f9a825"
+  backendConfig:
+    name: wa-prod-backend
+  route:
+    host: wa.apps.silver.devops.gov.bc.ca
+    iprestricted: true
+    ipallowlist:
+      - "142.34.53.0/24"
+      - "142.22.0.0/15"
+      - "142.24.0.0/13" 
+      - "142.32.0.0/13"
+jobs:
+  fullnameOverride: wa-prod-jobs
+  nameOverride: wa-prod-jobs
+  s3:
+    prefix: "PRD"
+  deployment:
+    vault:
+      role: "d78a41-prod"
+      path: "prod"
+      serviceAccount: "d78a41-vault"

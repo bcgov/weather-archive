@@ -2,7 +2,12 @@ backend:
   fullnameOverride: wa-test-backend
   nameOverride: wa-test-backend
   s3Prefix: TST
-
+  pvc: wa-test-jobs-data
+  deployment:
+    vault:
+      role: "d78a41-nonprod"
+      path: "test"
+      serviceAccount: "d78a41-vault"
 frontend:
   fullnameOverride: wa-test-frontend
   nameOverride: wa-test-frontend
@@ -18,3 +23,13 @@ frontend:
       - "142.22.0.0/15"
       - "142.24.0.0/13" 
       - "142.32.0.0/13"
+jobs:
+  fullnameOverride: wa-test-jobs
+  nameOverride: wa-test-jobs
+  s3:
+    prefix: "TST"
+  deployment:
+    vault:
+      role: "d78a41-nonprod"
+      path: "test"
+      serviceAccount: "d78a41-vault"

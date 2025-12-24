@@ -10,6 +10,19 @@ spec:
   replicas: {{ .Values.replicaCount }}
   template:
     metadata:
+      annotations:
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/agent-pre-populate-only: 'true'
+        vault.hashicorp.com/auth-path: auth/k8s-silver
+        vault.hashicorp.com/namespace: platform-services
+        vault.hashicorp.com/role: {{ .Values.deployment.vault.role }}
+        vault.hashicorp.com/agent-inject-secret-secrets.env: {{ .Values.deployment.vault.role }}/{{ .Values.deployment.vault.path }}
+        vault.hashicorp.com/agent-inject-template-secrets.env: |
+          {{`{{- with secret `}}"{{ .Values.deployment.vault.role }}/{{ .Values.deployment.vault.path }}"{{` }}
+          {{- range $k, $v := .Data.data }}
+          export {{ $k }}="{{ $v }}"
+          {{- end }}
+          {{- end `}} }}
       labels:
         {{- include "pwa-infra.labels" . | nindent 8 }}
     spec:
@@ -28,31 +41,6 @@ spec:
             - containerPort: 8080
               protocol: TCP
           env:
-            - name: Jwt__Key
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.deployment.env.jwtsecret }}
-                  key: token
-            - name: S3__ServiceUrl
-              valueFrom:
-                secretKeyRef:
-                  name: {{.Values.deployment.env.s3creds}}
-                  key: endpoint-url
-            - name: S3__Bucket
-              valueFrom:
-                secretKeyRef:
-                  name: {{.Values.deployment.env.s3creds}}
-                  key: bucket-name
-            - name: S3__AccessKey
-              valueFrom:
-                secretKeyRef:
-                  name: {{.Values.deployment.env.s3creds}}
-                  key: access-key
-            - name: S3__SecretKey
-              valueFrom:
-                secretKeyRef:
-                  name: {{.Values.deployment.env.s3creds}}
-                  key: secret-key
             - name: S3__Prefix
               value: {{ .Values.s3Prefix | quote }}
           securityContext:
@@ -64,6 +52,11 @@ spec:
               drop:
               - ALL
             readOnlyRootFilesystem: true
+          command:
+            - sh
+            - '-c'
+          args:
+            - . /vault/secrets/secrets.env && exec dotnet PWAApi.dll
           volumeMounts:
             - name: data
               mountPath: /app/data
@@ -106,6 +99,7 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 30
       imagePullSecrets: []
+      serviceAccountName: {{ .Values.deployment.vault.serviceAccount }}
       volumes:
           - name: data
             persistentVolumeClaim:

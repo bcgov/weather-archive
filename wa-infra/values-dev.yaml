@@ -3,7 +3,11 @@ backend:
   nameOverride: wa-dev-backend
   s3Prefix: DEV
   pvc: wa-dev-jobs-data
-
+  deployment:
+    vault:
+      role: "d78a41-nonprod"
+      path: "dev"
+      serviceAccount: "d78a41-vault"
 frontend:
   fullnameOverride: wa-dev-frontend
   nameOverride: wa-dev-frontend
@@ -24,3 +28,8 @@ jobs:
   nameOverride: wa-dev-jobs
   s3:
     prefix: "DEV"
+  deployment:
+    vault:
+      role: "d78a41-nonprod"
+      path: "dev"
+      serviceAccount: "d78a41-vault"

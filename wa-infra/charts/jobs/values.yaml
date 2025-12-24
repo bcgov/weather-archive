@@ -33,18 +33,15 @@ image:
   tag: latest
   pullPolicy: Always
 
+# Vault configuration
+deployment:
+  vault:
+    role: "d78a41-prod"
+    path: "prod"
+    serviceAccount: "d78a41-vault"
+
 # S3 Configuration
 s3:
-  # Name of existing secret with S3 credentials
-  credentialsSecretName: s3-credentials
-  
-  # Secret keys for S3 credentials
-  secretKeys:
-    endpointUrl: endpoint-url
-    bucket: bucket-name
-    accessKey: access-key
-    secretKey: secret-key
-  
   # S3 prefix
   prefix: "DEV"
   

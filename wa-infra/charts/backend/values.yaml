@@ -15,6 +15,7 @@ deployment:
     limits:
       memory: "500Mi" 
       cpu: "200m"
-  env:
-    s3creds: "s3-credentials"
-    jwtsecret: "jwt-secret"
+  vault:
+    role: "d78a41-prod"
+    path: "prod"
+    serviceAccount: "d78a41-vault"

@@ -63,8 +63,8 @@ data:
             keepalive 32;
         }
 
-        limit_req_zone $binary_remote_addr zone=general:10m rate=10r/s;
-        limit_req_zone $binary_remote_addr zone=api:10m rate=10r/m;
+        limit_req_zone $binary_remote_addr zone=general:10m rate=50r/s;
+        limit_req_zone $binary_remote_addr zone=api:10m rate=50r/m;
 
         server {
             listen 8081;
@@ -86,7 +86,7 @@ data:
 
             # Serve static files
             location / {
-                # limit_req zone=general burst=20 nodelay;
+                limit_req zone=general burst=20 nodelay;
                 include /etc/nginx/conf.d/security-headers.conf;
                 root /usr/share/nginx/html;
                 index index.html index.htm;
@@ -96,7 +96,7 @@ data:
             
             # Static assets with caching
             location ~* \.(css|js|png|jpg|jpeg|gif|svg|woff|woff2)$ {
-                # limit_req zone=general burst=50 nodelay;
+                limit_req zone=general burst=50 nodelay;
                 include /etc/nginx/conf.d/security-headers.conf;
                 root /usr/share/nginx/html;
                 expires 30d;
@@ -109,7 +109,7 @@ data:
             # Proxy API requests to backend
             location /api/ {
                 include /etc/nginx/conf.d/security-headers.conf;
-                # limit_req zone=api burst=5 nodelay;
+                limit_req zone=api burst=5 nodelay;
                 add_header Cache-Control "no-cache, no-store, must-revalidate" always;
                 add_header Pragma "no-cache" always;
                 # Block everything except GET and OPTIONS
