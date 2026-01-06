@@ -131,7 +131,7 @@ builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
-var sensorsPath = Path.Combine(app.Environment.ContentRootPath, "Data", "sensors.json");
+var sensorsPath = Path.Combine(app.Environment.ContentRootPath, "data", "stations.json");
 if (!File.Exists(sensorsPath))
 {
     throw new FileNotFoundException($"Required sensors file not found: {sensorsPath}");
