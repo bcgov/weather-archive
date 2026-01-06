@@ -8,7 +8,7 @@ env:
 on:
   workflow_dispatch:
   push:
-    branches: [ "rf-merged" ]
+    branches: [ "main" ]
 
 jobs:
   build-client:
