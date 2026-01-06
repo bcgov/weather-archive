@@ -1,0 +1,34 @@
+[
+  {
+    "weather_station_name": "Station 1",
+    "code": "11000",
+    "location": {
+      "type": "Point",
+      "coordinates": [
+        -123.11806,
+        50.05417
+      ]
+    },
+    "location_description": "W side of Hwy, 11 km N of Whistler Creek",
+    "elevation": 496,
+    "dataStartYear": 2010,
+    "dataEndYear": null,
+    "status": "active"
+  },
+  {
+    "weather_station_name": "Station 2",
+    "code": "12000",
+    "location": {
+      "type": "Point",
+      "coordinates": [
+        -123.14339,
+        49.84347
+      ]
+    },
+    "location_description": "Hwy east side at Batt Creek, 100 m south of entrance to upper view point.",
+    "elevation": 320,
+    "dataStartYear": 2010,
+    "dataEndYear": 2022,
+    "status": "decommisioned"
+  }
+]

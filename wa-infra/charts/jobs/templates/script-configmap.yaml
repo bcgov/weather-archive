@@ -1,0 +1,141 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pwa-infra.fullname" . }}-script
+  labels:
+    {{- include "pwa-infra.labels" . | nindent 4 }}
+data:
+  merge_job.py: |
+    import json
+    import os
+    from datetime import datetime
+    import boto3
+
+    def load_from_s3(s3_client, bucket, key):
+        """Download and load JSON from S3."""
+        print(f"  Fetching s3://{bucket}/{key}")
+        response = s3_client.get_object(Bucket=bucket, Key=key)
+        return json.loads(response['Body'].read())
+
+    def clean_string(value):
+        """Remove newlines, carriage returns, and extra whitespace from strings."""
+        if isinstance(value, str):
+            return ' '.join(value.replace('\n', ' ').replace('\r', ' ').split())
+        return value
+
+    def clean_object(obj):
+        """Recursively clean all string values in an object."""
+        if isinstance(obj, dict):
+            return {key: clean_object(value) for key, value in obj.items()}
+        elif isinstance(obj, list):
+            return [clean_object(item) for item in obj]
+        else:
+            return clean_string(obj)
+
+    def merge_files(file1_data, file2_data):
+        """Merge two JSON arrays based on 'code' field."""
+        dict1 = {item['code']: item for item in file1_data}
+        dict2 = {item['code']: item for item in file2_data}
+        
+        merged = []
+        all_codes = set(dict1.keys()) | set(dict2.keys())
+        
+        for code in all_codes:
+            if code in dict1 and code in dict2:
+                merged_obj = dict2[code].copy()
+                if 'dataStartYear' in dict1[code]:
+                    merged_obj['dataStartYear'] = dict1[code]['dataStartYear']
+                merged_obj = clean_object(merged_obj)
+                merged.append(merged_obj)
+            elif code in dict1:
+                merged.append(clean_object(dict1[code]))
+            else:
+                merged.append(clean_object(dict2[code]))
+        
+        merged.sort(key=lambda x: x['code'])
+        return merged
+
+    def main():
+        print(f"[{datetime.now()}] Starting merge job...")
+        
+        # Get S3 configuration from environment
+        endpoint_url = os.environ.get('S3__ServiceUrl')
+        bucket = os.environ.get('S3__Bucket')
+        access_key = os.environ.get('S3__AccessKey')
+        secret_key = os.environ.get('S3__SecretKey')
+        prefix = os.environ.get('S3__Prefix', '').strip()
+        
+        file1_name = os.environ.get('FILE1_KEY', 'SAWS.JSON')
+        file2_name = os.environ.get('FILE2_KEY', 'SAWSx.JSON')
+        
+        # Build full S3 keys with prefix (folder path)
+        if prefix:
+            prefix = prefix.strip('/')
+            file1_key = f"{prefix}/{file1_name}"
+            file2_key = f"{prefix}/{file2_name}"
+        else:
+            file1_key = file1_name
+            file2_key = file2_name
+        
+        print(f"S3 Endpoint: {endpoint_url}")
+        print(f"S3 Bucket: {bucket}")
+        print(f"S3 Prefix: {prefix if prefix else '(root)'}")
+        print(f"File 1: {file1_key}")
+        print(f"File 2: {file2_key}")
+        
+        # Create S3 client
+        s3 = boto3.client(
+            's3',
+            endpoint_url=endpoint_url,
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key
+        )
+        
+        print(f"\nDownloading {file1_name}...")
+        file1 = load_from_s3(s3, bucket, file1_key)
+        print(f"  Loaded {len(file1)} objects")
+        
+        print(f"\nDownloading {file2_name}...")
+        file2 = load_from_s3(s3, bucket, file2_key)
+        print(f"  Loaded {len(file2)} objects")
+        
+        print("\nMerging files...")
+        merged = merge_files(file1, file2)
+        
+        output_dir = os.environ.get('OUTPUT_DIR', '/data')
+        output_file = os.environ.get('OUTPUT_FILE', 'stations.json')
+        temp_path = os.path.join(output_dir, f"{output_file}.tmp")
+        final_path = os.path.join(output_dir, output_file)
+        
+        print(f"Writing {len(merged)} objects to {final_path}...")
+        with open(temp_path, 'w', encoding='utf-8') as f:
+            json.dump(merged, f, indent=2, ensure_ascii=False)
+        
+        os.replace(temp_path, final_path)
+        
+        dict1 = {item['code']: item for item in file1}
+        dict2 = {item['code']: item for item in file2}
+        only_in_file1 = len(set(dict1.keys()) - set(dict2.keys()))
+        only_in_file2 = len(set(dict2.keys()) - set(dict1.keys()))
+        in_both = len(set(dict1.keys()) & set(dict2.keys()))
+        
+        print(f"\n{'='*80}")
+        print("MERGE STATISTICS:")
+        print(f"{'='*80}")
+        print(f"Objects only in file1: {only_in_file1}")
+        print(f"Objects only in file2: {only_in_file2}")
+        print(f"Objects in both (merged): {in_both}")
+        print(f"Total unique objects: {len(merged)}")
+        print(f"{'='*80}")
+        
+        print(f"\n[{datetime.now()}] Merge complete!")
+        print(f"  - Merged data: {final_path}")
+
+    if __name__ == "__main__":
+        try:
+            main()
+        except Exception as e:
+            print(f"Error: {e}")
+            import traceback
+            traceback.print_exc()
+            exit(1)

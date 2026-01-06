@@ -1,0 +1,81 @@
+{{- if .Values.cronjob.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "pwa-infra.fullname" . }}
+  labels:
+    {{- include "pwa-infra.labels" . | nindent 4 }}
+    component: cronjob
+spec:
+  schedule: {{ .Values.cronjob.schedule | quote }}
+  {{- if .Values.cronjob.timeZone }}
+  timeZone: {{ .Values.cronjob.timeZone | quote }}
+  {{- end }}
+  successfulJobsHistoryLimit: {{ .Values.cronjob.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.cronjob.failedJobsHistoryLimit }}
+  concurrencyPolicy: {{ .Values.cronjob.concurrencyPolicy }}
+  jobTemplate:
+    metadata:
+      labels:
+        {{- include "pwa-infra.selectorLabels" . | nindent 8 }}
+        component: cronjob
+    spec:
+      backoffLimit: {{ .Values.cronjob.backoffLimit }}
+      template:
+        metadata:
+          annotations:
+            vault.hashicorp.com/agent-inject: 'true'
+            vault.hashicorp.com/agent-pre-populate-only: 'true'
+            vault.hashicorp.com/auth-path: auth/k8s-silver
+            vault.hashicorp.com/namespace: platform-services
+            vault.hashicorp.com/role: {{ .Values.deployment.vault.role }}
+            vault.hashicorp.com/agent-inject-secret-secrets.env: {{ .Values.deployment.vault.role }}/{{ .Values.deployment.vault.path }}
+            vault.hashicorp.com/agent-inject-template-secrets.env: |
+              {{`{{- with secret `}}"{{ .Values.deployment.vault.role }}/{{ .Values.deployment.vault.path }}"{{` }}
+              {{- range $k, $v := .Data.data }}
+              export {{ $k }}="{{ $v }}"
+              {{- end }}
+              {{- end `}} }}
+          labels:
+            {{- include "pwa-infra.selectorLabels" . | nindent 12 }}
+            component: cronjob
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: merger
+            image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            command: ["/bin/bash", "-c"]
+            args:
+            - |
+              echo "Installing boto3..."
+              pip install --no-cache-dir boto3
+              echo "Running merge script..."
+              . /vault/secrets/secrets.env && python /scripts/merge_job.py
+            env:
+            - name: S3__Prefix
+              value: {{ .Values.s3.prefix | quote }}
+            - name: FILE1_KEY
+              value: {{ .Values.s3.file1Key | quote }}
+            - name: FILE2_KEY
+              value: {{ .Values.s3.file2Key | quote }}
+            - name: OUTPUT_DIR
+              value: {{ .Values.output.directory | quote }}
+            - name: OUTPUT_FILE
+              value: {{ .Values.output.filename | quote }}
+            volumeMounts:
+            - name: script
+              mountPath: /scripts
+            - name: data
+              mountPath: {{ .Values.output.directory }}
+            resources:
+              {{- toYaml .Values.resources | nindent 14 }}
+          serviceAccountName: {{ .Values.deployment.vault.serviceAccount }}
+          volumes:
+          - name: script
+            configMap:
+              name: {{ include "pwa-infra.fullname" . }}-script
+          - name: data
+            persistentVolumeClaim:
+              claimName: {{ include "pwa-infra.fullname" . }}-data
+{{- end }}

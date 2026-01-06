@@ -1,0 +1,35 @@
+backend:
+  fullnameOverride: wa-dev-backend
+  nameOverride: wa-dev-backend
+  s3Prefix: DEV
+  pvc: wa-dev-jobs-data
+  deployment:
+    vault:
+      role: "d78a41-nonprod"
+      path: "dev"
+      serviceAccount: "d78a41-vault"
+frontend:
+  fullnameOverride: wa-dev-frontend
+  nameOverride: wa-dev-frontend
+  environment: development
+  headerColor: "#448a38"
+  backendConfig:
+    name: wa-dev-backend
+  route:
+    host: wa-dev.apps.silver.devops.gov.bc.ca
+    iprestricted: true
+    ipallowlist:
+      - "142.34.53.0/24"
+      - "142.22.0.0/15"
+      - "142.24.0.0/13" 
+      - "142.32.0.0/13"
+jobs:
+  fullnameOverride: wa-dev-jobs
+  nameOverride: wa-dev-jobs
+  s3:
+    prefix: "DEV"
+  deployment:
+    vault:
+      role: "d78a41-nonprod"
+      path: "dev"
+      serviceAccount: "d78a41-vault"

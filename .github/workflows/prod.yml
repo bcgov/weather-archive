@@ -1,0 +1,43 @@
+name: Build & Deploy to PROD
+
+env:
+  OPENSHIFT_SERVER: ${{ secrets.OPENSHIFT_SERVER }}
+  OPENSHIFT_NAMESPACE: ${{ vars.OPENSHIFT_NAMESPACE }}
+  IMAGE_REGISTRY: ${{ vars.OPENSHIFT_REGISTRY }}
+  TOOLS_NAMESPACE: ${{ vars.OPENSHIFT_TOOLS_NAMESPACE }}
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  retag-deploy-images:
+    name: Retag and deploy the images to the namespace
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install OC CLI tools
+      uses: redhat-actions/openshift-tools-installer@v1
+      with:
+        oc: "4"
+        skip_cache: true
+    - name: Give openshift context
+      uses: redhat-actions/oc-login@v1
+      with:
+        openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
+        openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+        namespace: ${{ env.OPENSHIFT_NAMESPACE }}
+        insecure_skip_tls_verify: false
+    - name: Find and tag images for production
+      run: |
+        # Switch to tools namespace where images are stored
+        oc project ${{ env.TOOLS_NAMESPACE }}
+        
+        # Tag the release test version as latest-prod
+        oc tag wa-frontend:${{ github.ref_name }} wa-frontend:latest-prod
+        oc tag wa-backend:${{ github.ref_name }} wa-backend:latest-prod
+    - name: Run helm script
+      run: |
+        helm upgrade --install wa-prod ./wa-infra -f ./wa-infra/values-prod.yaml --set frontend.image.tag=latest-prod --set backend.image.tag=latest-prod --namespace ${{ env.OPENSHIFT_NAMESPACE }}

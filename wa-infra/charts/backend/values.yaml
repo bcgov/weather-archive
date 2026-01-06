@@ -1,0 +1,21 @@
+fullnameOverride: wa-backend
+nameOverride: wa-backend
+
+replicaCount: 1
+
+image:
+  repository: image-registry.openshift-image-registry.svc:5000/d78a41-tools/wa-backend
+  tag: latest
+
+deployment:
+  resources:
+    requests:
+      memory: "250Mi"
+      cpu: "50m"
+    limits:
+      memory: "500Mi" 
+      cpu: "200m"
+  vault:
+    role: "d78a41-prod"
+    path: "prod"
+    serviceAccount: "d78a41-vault"
