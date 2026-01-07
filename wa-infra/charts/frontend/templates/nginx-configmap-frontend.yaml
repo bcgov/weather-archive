@@ -12,6 +12,11 @@ data:
     }
 
     http {
+        geo $local_access {
+          default 0;
+          127.0.0.1 1;
+          10.0.0.0/8 1;
+        }
         client_body_temp_path /tmp/client_temp;
         proxy_temp_path /tmp/proxy_temp;
 
@@ -65,6 +70,7 @@ data:
 
         limit_req_zone $binary_remote_addr zone=general:10m rate=50r/s;
         limit_req_zone $binary_remote_addr zone=api:10m rate=50r/m;
+        limit_req_zone $binary_remote_addr zone=api_download:10m rate=10r/m;
 
         server {
             listen 8081;
@@ -92,6 +98,7 @@ data:
                 index index.html index.htm;
                 add_header Cache-Control "no-cache, no-store, must-revalidate" always;
                 add_header Pragma "no-cache" always;
+                try_files $uri $uri/ =404;
             }
             
             # Static assets with caching
@@ -103,9 +110,36 @@ data:
                 add_header Cache-Control "public, max-age=2592000, immutable" always;
                 add_header X-Content-Type-Options nosniff always;
                 try_files $uri =404;
-                
-        }
+            }
+            # Proxy API requests to backend for downloads
+            location ~ ^/api/weatherstations/[^/]+/files/ {
+                include /etc/nginx/conf.d/security-headers.conf;
+                limit_req zone=api_download burst=15 nodelay;
+                add_header Cache-Control "no-cache, no-store, must-revalidate" always;
+                add_header Pragma "no-cache" always;
+                # Block everything except GET and OPTIONS
+                limit_except GET OPTIONS {
+                    deny all;
+                }
+                proxy_pass http://wa_backend;
+                proxy_http_version 1.1;
+                proxy_set_header Connection "";
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
 
+                # Remove server info from proxied responses
+                proxy_hide_header X-Powered-By;
+                proxy_hide_header Server;
+                
+                proxy_connect_timeout 60s;
+                proxy_send_timeout 300s;
+                proxy_read_timeout 300s;
+                
+                # Disable buffering for streaming
+                proxy_buffering off;
+            }
             # Proxy API requests to backend
             location /api/ {
                 include /etc/nginx/conf.d/security-headers.conf;
@@ -139,13 +173,13 @@ data:
             }
             
             # Health check endpoint
-            location /health {
+            location = /health {
                 access_log off;
-                allow 127.0.0.1;
-                allow 10.0.0.0/8;
-                deny all;
-                return 200 "healthy\n";
+                if ($local_access = 0) {
+                    return 403;
+                }
                 add_header Content-Type text/plain;
+                return 200 "healthy\n";
             }
         }
     }
