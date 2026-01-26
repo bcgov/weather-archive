@@ -75,7 +75,7 @@ namespace PWAApi.Services
                       Description = el.GetProperty("location_description").GetString(),
                       Longitude = coords[0],
                       Latitude = coords[1],
-                      Elevation = el.GetProperty("elevation").GetInt32(),
+                      Elevation = el.TryGetProperty("elevation", out var elevProp) && elevProp.ValueKind != JsonValueKind.Null ? elevProp.GetInt32() : null,
                       DataStartYear = el.GetProperty("dataStartYear").GetInt32(),
                       DataEndYear = el.GetProperty("dataEndYear").ValueKind == JsonValueKind.Null ? currentYearDate : el.GetProperty("dataEndYear").GetInt32(),
                       Status = el.GetProperty("status").GetString()!

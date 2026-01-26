@@ -60,7 +60,7 @@ export function createObservationPanel(api, toastManager) {
         
         $detailName.text(station.name);
         $detailDescription.text(station.description);
-        $detailElevation.text(station.elevation + "m");
+        $detailElevation.text(station.elevation != null ? station.elevation + "m" : "Not Available");
         $detailStatus.text(station.status);
         $detailLng.text(formattedCoords.lng);
         $detailLat.text(formattedCoords.lat);
