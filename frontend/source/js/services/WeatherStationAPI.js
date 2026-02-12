@@ -148,6 +148,9 @@ export function createWeatherStationAPI(baseUrl, toastManager) {
                 });
 
                 if (!response.ok) {
+                    if(response.status === 429){
+                        throw new Error('You have temporarily exceeded the maximum number of downloads allowed. Please wait a moment before continuing.', { cause: 429 });
+                    }
                     throw new Error(`Download failed with status ${response.status}`);
                 }
 
@@ -177,7 +180,8 @@ export function createWeatherStationAPI(baseUrl, toastManager) {
                 window.URL.revokeObjectURL(downloadUrl);
 
             } catch (error) {
-                toastManager.handleError(error, 'downloadFile', 'Failed to download file');
+                const userMessage = error.cause === 429 ? error.message : 'Failed to download file';
+                toastManager.handleError(error, 'downloadFile', userMessage);
             }
         },
 

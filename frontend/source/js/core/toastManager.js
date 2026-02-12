@@ -25,7 +25,7 @@ export function createToastManager() {
                 left: '50%',
                 transform: 'translateX(-50%)',
                 'z-index': 9999,
-                'max-width': '400px',
+                'max-width': '450px',
                 width: '90%'
             });
 

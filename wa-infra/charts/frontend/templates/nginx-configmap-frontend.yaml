@@ -89,6 +89,7 @@ data:
             deny all;
             {{- end }}
             
+            limit_req_status 429;
 
             # Serve static files
             location / {
