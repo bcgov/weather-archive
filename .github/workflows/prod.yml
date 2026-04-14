@@ -40,4 +40,4 @@ jobs:
         oc tag wa-backend:${{ github.ref_name }} wa-backend:latest-prod
     - name: Run helm script
       run: |
-        helm upgrade --install wa-prod ./wa-infra -f ./wa-infra/values-prod.yaml --set frontend.image.tag=latest-prod --set backend.image.tag=latest-prod --namespace ${{ env.OPENSHIFT_NAMESPACE }}
+        helm upgrade --install wa-prod ./wa-infra -f ./wa-infra/values-prod.yaml --set frontend.image.tag=${{ github.ref_name }} --set backend.image.tag=${{ github.ref_name }} --namespace ${{ env.OPENSHIFT_NAMESPACE }}
