@@ -45,13 +45,10 @@ spec:
           - name: merger
             image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
-            command: ["/bin/bash", "-c"]
+            command: ["/bin/sh", "-c"]
             args:
             - |
-              echo "Installing boto3..."
-              pip install --no-cache-dir boto3
-              echo "Running merge script..."
-              . /vault/secrets/secrets.env && python /scripts/merge_job.py
+              . /vault/secrets/secrets.env && python /app/merge_job.py
             env:
             - name: S3__Prefix
               value: {{ .Values.s3.prefix | quote }}
@@ -64,17 +61,12 @@ spec:
             - name: OUTPUT_FILE
               value: {{ .Values.output.filename | quote }}
             volumeMounts:
-            - name: script
-              mountPath: /scripts
             - name: data
               mountPath: {{ .Values.output.directory }}
             resources:
               {{- toYaml .Values.resources | nindent 14 }}
           serviceAccountName: {{ .Values.deployment.vault.serviceAccount }}
           volumes:
-          - name: script
-            configMap:
-              name: {{ include "pwa-infra.fullname" . }}-script
           - name: data
             persistentVolumeClaim:
               claimName: {{ include "pwa-infra.fullname" . }}-data

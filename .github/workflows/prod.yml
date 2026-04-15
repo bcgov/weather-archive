@@ -38,6 +38,7 @@ jobs:
         # Tag the release test version as latest-prod
         oc tag wa-frontend:${{ github.ref_name }} wa-frontend:latest-prod
         oc tag wa-backend:${{ github.ref_name }} wa-backend:latest-prod
+        oc tag wa-jobs:${{ github.ref_name }} wa-jobs:latest-prod
     - name: Run helm script
       run: |
-        helm upgrade --install wa-prod ./wa-infra -f ./wa-infra/values-prod.yaml --set frontend.image.tag=${{ github.ref_name }} --set backend.image.tag=${{ github.ref_name }} --namespace ${{ env.OPENSHIFT_NAMESPACE }}
+        helm upgrade --install wa-prod ./wa-infra -f ./wa-infra/values-prod.yaml --set frontend.image.tag=${{ github.ref_name }} --set backend.image.tag=${{ github.ref_name }} --set jobs.image.tag=${{ github.ref_name }} --namespace ${{ env.OPENSHIFT_NAMESPACE }}
