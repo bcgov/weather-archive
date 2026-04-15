@@ -29,7 +29,7 @@ cronjob:
 
 # Python image settings
 image:
-  repository: registry.redhat.io/ubi8/python-311
+  repository: image-registry.openshift-image-registry.svc:5000/d78a41-tools/wa-jobs
   tag: latest
   pullPolicy: Always
 
