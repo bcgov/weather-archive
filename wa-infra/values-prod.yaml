@@ -17,7 +17,7 @@ frontend:
     name: wa-prod-backend
   route:
     host: wa.apps.silver.devops.gov.bc.ca
-    iprestricted: true
+    iprestricted: false
     ipallowlist:
       - "142.34.53.0/24"
       - "142.22.0.0/15"
