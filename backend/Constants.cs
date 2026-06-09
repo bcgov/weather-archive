@@ -15,5 +15,6 @@
         public const int MaxRequestLineSizeKb = 32;
         public const int RequestHeadersTimeoutSeconds = 30;
         public const int MaxRequestBodySizeMb = 10;
+        public const int MaxCombinedInMemorySizeMb = 50;
     }
 }

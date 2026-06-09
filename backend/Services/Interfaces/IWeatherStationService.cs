@@ -24,5 +24,13 @@ namespace PWAApi.Services.Interfaces
         /// Throws UnauthorizedAccessException if token validation fails.
         /// </summary>
         Task<Stream?> GetMonthlyDataStreamAsync(int stationId, int year, int month);
+
+        /// <summary>
+        /// Downloads all available monthly CSV files for a year, merges them into a single
+        /// CSV with a union of all headers, and returns the combined stream.
+        /// Returns null if no data is available for the year.
+        /// Throws FileSizeLimitExceededException if combined size exceeds the configured limit.
+        /// </summary>
+        Task<Stream?> GetCombinedYearDataStreamAsync(int stationId, int year);
     }
 }

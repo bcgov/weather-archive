@@ -39,7 +39,9 @@ export const UI_ELEMENTS = {
     observation: {
         $dataList: $('#observation-data-list'),
         $loader: $('#observation-loader'),
-        $loaderText: $('#observation-loader-text')
+        $loaderText: $('#observation-loader-text'),
+        $downloadYearContainer: $('#download-year-container'),
+        $downloadYearBtn: $('#download-year-btn')
     },
     map: {
         $loading: $('#mapLoading'),

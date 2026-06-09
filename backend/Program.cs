@@ -50,6 +50,7 @@ if (string.IsNullOrWhiteSpace(s3SecretKey))
 // Bind configuration sections
 builder.Services.Configure<JwtOptions>(jwtSection);
 builder.Services.Configure<S3Options>(s3Section);
+builder.Services.Configure<LimitsOptions>(builder.Configuration.GetSection("Limits"));
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

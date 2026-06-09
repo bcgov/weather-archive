@@ -54,7 +54,8 @@ namespace PWAApi.Controllers
             {
                 Year = m.Year,
                 Month = m.Month,
-                Token = m.Token
+                Token = m.Token,
+                IsYearlyCombined = m.IsYearlyCombined
             });
             return Ok(dtos);
         }
@@ -92,6 +93,40 @@ namespace PWAApi.Controllers
             var fileName = $"{request.StationId}_{request.Year}_{request.Month}.csv";
             return File(stream, "text/csv", fileName);
       
+        }
+
+        /// <summary>
+        /// Download combined yearly CSV data file (all months merged).
+        /// </summary>
+        [HttpGet("{stationId}/files/{year}/all")]
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public async Task<IActionResult> DownloadYearlyCombinedFileAsync([FromRoute] YearlyCombinedDownloadQuery request)
+        {
+            if (!await _weatherStationService.IsValidStationRequestAsync(request.StationId, request.Year))
+            {
+                return Problem(
+                    statusCode: 404,
+                    title: "Data Not Found",
+                    detail: "The requested data is not available"
+                );
+            }
+
+            var fileClaim = User.FindFirst("file")?.Value;
+            var expectedClaim = $"{request.StationId}_{request.Year}_all";
+
+            if (fileClaim == null || !fileClaim.Equals(expectedClaim, StringComparison.OrdinalIgnoreCase))
+            {
+                return Unauthorized();
+            }
+
+            var stream = await _weatherStationService.GetCombinedYearDataStreamAsync(request.StationId, request.Year);
+            if (stream == null)
+            {
+                return NotFound();
+            }
+
+            var fileName = $"{request.StationId}_{request.Year}_all.csv";
+            return File(stream, "text/csv", fileName);
         }
     }
 }
