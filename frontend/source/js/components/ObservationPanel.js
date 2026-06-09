@@ -241,14 +241,23 @@ export function createObservationPanel(api, toastManager) {
     /**
      * Handles the download-all-months button click.
      */
-    function handleDownloadAllClick() {
+    async function handleDownloadAllClick() {
         if (!allMonthsToken) {
             toastManager.error('Download token not found. Please reselect the year.');
             return;
         }
         if (!currentStation) return;
-        const year = $downloadYearBtn.data('year');
-        api.downloadFile(currentStation.id, year, 'all', allMonthsToken);
+
+        $downloadYearBtn.prop('disabled', true)
+            .html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Downloading\u2026');
+
+        try {
+            const year = $downloadYearBtn.data('year');
+            await api.downloadFile(currentStation.id, year, 'all', allMonthsToken);
+        } finally {
+            $downloadYearBtn.prop('disabled', false)
+                .html('<i class="bi bi-file-earmark-arrow-down" aria-hidden="true"></i> Download All');
+        }
     }
 
     /**
