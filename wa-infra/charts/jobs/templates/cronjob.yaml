@@ -45,6 +45,15 @@ spec:
           - name: merger
             image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
+            securityContext:
+              seccompProfile:
+                type: RuntimeDefault
+              runAsNonRoot: true
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              readOnlyRootFilesystem: true
             command: ["/bin/sh", "-c"]
             args:
             - |
@@ -63,6 +72,8 @@ spec:
             volumeMounts:
             - name: data
               mountPath: {{ .Values.output.directory }}
+            - name: tmp
+              mountPath: /tmp
             resources:
               {{- toYaml .Values.resources | nindent 14 }}
           serviceAccountName: {{ .Values.deployment.vault.serviceAccount }}
@@ -70,4 +81,6 @@ spec:
           - name: data
             persistentVolumeClaim:
               claimName: {{ include "pwa-infra.fullname" . }}-data
+          - name: tmp
+            emptyDir: {}
 {{- end }}

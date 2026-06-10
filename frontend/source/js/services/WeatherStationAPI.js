@@ -139,7 +139,10 @@ export function createWeatherStationAPI(baseUrl, toastManager) {
                     throw new Error('Valid authorization token is required');
                 }
 
-                const url = `weatherstations/${sensorId}/files/${year}/${month}`;
+                const isAll = month === 'all';
+                const url = isAll
+                    ? `weatherstations/${sensorId}/files/${year}/all`
+                    : `weatherstations/${sensorId}/files/${year}/${month}`;
                 const response = await makeRequest(url, {
                     method: 'GET',
                     headers: {
@@ -148,8 +151,11 @@ export function createWeatherStationAPI(baseUrl, toastManager) {
                 });
 
                 if (!response.ok) {
-                    if(response.status === 429){
-                        throw new Error('You have temporarily exceeded the maximum number of downloads allowed. Please wait a moment before continuing.', { cause: 429 });
+                    if (response.status === 429) {
+                        const message = isAll
+                            ? 'Yearly download limit reached. Please wait a minute before downloading the full year again.'
+                            : 'You have temporarily exceeded the maximum number of downloads allowed. Please wait a moment before continuing.';
+                        throw new Error(message, { cause: 429 });
                     }
                     throw new Error(`Download failed with status ${response.status}`);
                 }
@@ -171,7 +177,9 @@ export function createWeatherStationAPI(baseUrl, toastManager) {
                 const downloadUrl = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = downloadUrl;
-                link.download = `${sensorId}_${year}_${month.toString().padStart(2, '0')}.csv`;
+                link.download = isAll
+                    ? `${sensorId}_${year}_all.csv`
+                    : `${sensorId}_${year}_${month.toString().padStart(2, '0')}.csv`;
 
                 document.body.appendChild(link);
                 link.click();

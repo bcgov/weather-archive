@@ -21,6 +21,7 @@ export function createObservationPanel(api, toastManager) {
     let currentStation = null;
     let requestController = null;
     let tokenStore = new Map();
+    let allMonthsToken = null;
 
     // jQuery elements
     const $yearSelect = UI_ELEMENTS.sensor.$yearSelect;
@@ -28,6 +29,8 @@ export function createObservationPanel(api, toastManager) {
     const $dataList = UI_ELEMENTS.observation.$dataList;
     const $loader = UI_ELEMENTS.observation.$loader;
     const $loaderText = UI_ELEMENTS.observation.$loaderText;
+    const $downloadYearContainer = UI_ELEMENTS.observation.$downloadYearContainer;
+    const $downloadYearBtn = UI_ELEMENTS.observation.$downloadYearBtn;
     const $panel = UI_ELEMENTS.map.$panel;
     const $expandBtn = UI_ELEMENTS.buttons.$expand;
     const $closeBtn = UI_ELEMENTS.buttons.$close;
@@ -69,6 +72,9 @@ export function createObservationPanel(api, toastManager) {
         for (let year = station.dataEnd; year >= station.dataStart; year--) {
             $yearSelect.append(`<option value="${year}">${year}</option>`);
         }
+        // Clear the download all token
+        allMonthsToken = null;
+        $downloadYearContainer.addClass('d-none');
         // Add co-located stations info if present
         renderColocatedStationsInfo(colocatedStations);
         
@@ -110,12 +116,22 @@ export function createObservationPanel(api, toastManager) {
         }
 
         try {
-            files.forEach((fileData) => {
+            const combinedEntry = files.find(f => f.isYearlyCombined);
+            const monthlyFiles = files.filter(f => !f.isYearlyCombined);
+
+            monthlyFiles.forEach((fileData) => {
                 storeToken(fileData.year, fileData.month, fileData.token);
                 const observationData = createObservationData(fileData);
                 const $listItem = observationData.createListItem();
                 $dataList.append($listItem);
             });
+
+            if (combinedEntry) {
+                allMonthsToken = combinedEntry.token;
+                $downloadYearBtn.data('year', combinedEntry.year);
+                $downloadYearContainer.removeClass('d-none');
+            }
+
             obsLoader.success();
         } catch (error) {
             toastManager.error('Failed to load full observation data. Please reselect the year.');
@@ -128,7 +144,8 @@ export function createObservationPanel(api, toastManager) {
      */
     async function updateObservationData() {
         const year = $yearSelect.val();
-
+        allMonthsToken = null;
+        $downloadYearContainer.addClass('d-none');
         if (!year) {
             obsLoader.error('Select a year to download observation data');
             return;
@@ -222,6 +239,28 @@ export function createObservationPanel(api, toastManager) {
         });
     }
     /**
+     * Handles the download-all-months button click.
+     */
+    async function handleDownloadAllClick() {
+        if (!allMonthsToken) {
+            toastManager.error('Download token not found. Please reselect the year.');
+            return;
+        }
+        if (!currentStation) return;
+
+        $downloadYearBtn.prop('disabled', true)
+            .html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Downloading\u2026');
+
+        try {
+            const year = $downloadYearBtn.data('year');
+            await api.downloadFile(currentStation.id, year, 'all', allMonthsToken);
+        } finally {
+            $downloadYearBtn.prop('disabled', false)
+                .html('<i class="bi bi-file-earmark-arrow-down" aria-hidden="true"></i> Download All');
+        }
+    }
+
+    /**
      * Handles download button clicks.
      * @param {Event} event - The click event
      */
@@ -296,6 +335,8 @@ export function createObservationPanel(api, toastManager) {
         $panel.removeClass('open expanded');
         resetExpandButton();
         // Reset state
+        allMonthsToken = null;
+        $downloadYearContainer.addClass('d-none');
         currentStation = null;
         $yearSelect.prop('selectedIndex', 0);
         obsLoader.error('Select a station to view observation data');
@@ -321,6 +362,9 @@ export function createObservationPanel(api, toastManager) {
 
         // Close button
         $closeBtn.on('click', closePanel);
+
+        // Download all months button
+        $downloadYearBtn.on('click', handleDownloadAllClick);
 
         // Download button clicks
         $dataList.on('click', '.download-observation', handleDownloadClick);
@@ -351,7 +395,9 @@ export function createObservationPanel(api, toastManager) {
 
             // Reset year selection
             $yearSelect.prop('selectedIndex', 0);
-
+            // Clear the download all token
+            allMonthsToken = null;
+            $downloadYearContainer.addClass('d-none');
             // Update UI state
             updateSelectionUI();
 

@@ -19,15 +19,34 @@ spec:
   policyTypes:
     - Ingress
 ---
+# Default-deny baseline: deny all ingress to every pod in the namespace.
+# Other policies additively re-allow only the required flows.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ include "pwa-infra.fullname" . }}-allow-same-namespace
+  name: {{ include "pwa-infra.fullname" . }}-default-deny-ingress
   labels: {{ include "pwa-infra.labels" . | nindent 4 }}
 spec:
   podSelector: {}
+  policyTypes:
+    - Ingress
+---
+# Allow the backend (port 8080) to receive traffic ONLY from frontend pods.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "pwa-infra.fullname" . }}-backend-allow-from-frontend
+  labels: {{ include "pwa-infra.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.backendConfig.name }}
   ingress:
     - from:
-        - podSelector: {}
+        - podSelector:
+            matchLabels: {{- include "pwa-infra.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 8080
   policyTypes:
     - Ingress

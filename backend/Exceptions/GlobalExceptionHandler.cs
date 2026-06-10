@@ -1,6 +1,7 @@
 ﻿using Amazon.S3;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using PWAApi.Exceptions;
 
 namespace PWAApi.Exceptions
 {
@@ -34,6 +35,8 @@ namespace PWAApi.Exceptions
             return exception switch
             {
                 AmazonS3Exception => (503, "Storage Service Unavailable", "The storage service is temporarily unavailable."),
+
+                FileSizeLimitExceededException => (413, "Payload Too Large", "The combined data exceeds the allowed size limit."),
 
                 TaskCanceledException or OperationCanceledException => (408, "Request Timeout", "The request took too long to complete."),
 
