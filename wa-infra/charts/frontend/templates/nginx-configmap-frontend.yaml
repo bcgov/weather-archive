@@ -59,8 +59,8 @@ data:
                        '"$http_user_agent" "$http_x_forwarded_for" '
                        'rt=$request_time';
 
-        access_log /var/log/nginx/access.log main;
-        error_log /var/log/nginx/error.log;
+        access_log /dev/stdout main;
+        error_log /dev/stderr;
 
         # Upstream for backend service
         upstream wa_backend {
