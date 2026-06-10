@@ -19,6 +19,8 @@ jobs:
     steps:
     - name: checkout code
       uses: actions/checkout@v4
+    - name: Set short SHA
+      run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
     - name: Build frontend
       id: build_frontend_image
       uses: redhat-actions/buildah-build@v2
@@ -27,6 +29,8 @@ jobs:
         tags: latest ${{ github.sha }}
         labels: |
           app=wa-frontend
+        build-args: |
+          BUILD_VERSION=${{ env.SHORT_SHA }}
         context: .
         containerfiles: |
           ./frontend/Dockerfile

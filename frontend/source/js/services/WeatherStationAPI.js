@@ -151,8 +151,11 @@ export function createWeatherStationAPI(baseUrl, toastManager) {
                 });
 
                 if (!response.ok) {
-                    if(response.status === 429){
-                        throw new Error('You have temporarily exceeded the maximum number of downloads allowed. Please wait a moment before continuing.', { cause: 429 });
+                    if (response.status === 429) {
+                        const message = isAll
+                            ? 'Yearly download limit reached. Please wait a minute before downloading the full year again.'
+                            : 'You have temporarily exceeded the maximum number of downloads allowed. Please wait a moment before continuing.';
+                        throw new Error(message, { cause: 429 });
                     }
                     throw new Error(`Download failed with status ${response.status}`);
                 }

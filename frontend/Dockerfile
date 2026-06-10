@@ -1,7 +1,13 @@
 FROM nginx:alpine
 
+# Build-time cache-busting version (defaults to 'dev'; CI passes github.sha)
+ARG BUILD_VERSION=dev
+
 # Copy static files
 COPY ./frontend/source /usr/share/nginx/html
+
+# Stamp all asset query-string versions with the build version
+RUN sed -i "s/v=[0-9]*/v=${BUILD_VERSION}/g" /usr/share/nginx/html/index.html
 
 # Copy nginx configuration
 COPY ./frontend/nginx.conf /etc/nginx/nginx.conf
