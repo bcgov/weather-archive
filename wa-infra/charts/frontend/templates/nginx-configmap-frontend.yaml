@@ -101,6 +101,10 @@ data:
                 add_header Cache-Control "no-cache, no-store, must-revalidate" always;
                 add_header Pragma "no-cache" always;
                 try_files $uri $uri/ =404;
+                {{- if ne .Values.environment "production" }}
+                sub_filter '</head>' '<style>.bg-primary-nav { background-color: {{ .Values.headerColor }} !important; }</style></head>';
+                sub_filter_once on;
+                {{- end }}
             }
             
             # Static assets with caching
