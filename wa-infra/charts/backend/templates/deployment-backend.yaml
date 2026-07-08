@@ -104,6 +104,15 @@ spec:
           - name: data
             persistentVolumeClaim:
               claimName: {{ .Values.pvc }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: "app.kubernetes.io/instance"
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: {{ template "pwa-infra.name" . }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
