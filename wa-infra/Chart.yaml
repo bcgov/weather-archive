@@ -1,7 +1,7 @@
 apiVersion: v2
 name: wa-infra
 description: A Helm chart for Weather Archive
-
+icon: "https://raw.githubusercontent.com/bcgov/weather-archive/main/wa-infra/logo_wa.png"
 type: application
 
 version: 0.1.0
