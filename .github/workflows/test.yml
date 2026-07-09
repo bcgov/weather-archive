@@ -18,7 +18,7 @@ jobs:
 
     steps:
     - name: checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Set short SHA
       run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
     - name: Build frontend
@@ -51,7 +51,7 @@ jobs:
 
     steps:
     - name: checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Build .NET
       id: build_backend_image
       uses: redhat-actions/buildah-build@v2
@@ -79,7 +79,7 @@ jobs:
 
     steps:
     - name: checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Build jobs
       id: build_jobs_image
       uses: redhat-actions/buildah-build@v2
@@ -107,7 +107,7 @@ jobs:
     environment: test
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Install OC CLI tools
       uses: redhat-actions/openshift-tools-installer@v1
       with:
