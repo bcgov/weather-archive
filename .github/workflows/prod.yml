@@ -17,7 +17,7 @@ jobs:
     environment: prod
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Install OC CLI tools
       uses: redhat-actions/openshift-tools-installer@v1
       with:
