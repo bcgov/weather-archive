@@ -19,12 +19,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v7
     - name: Install OC CLI tools
-      uses: redhat-actions/openshift-tools-installer@v1
+      uses: redhat-actions/openshift-tools-installer@v2
       with:
         oc: "4"
         skip_cache: true
     - name: Give openshift context
-      uses: redhat-actions/oc-login@v1
+      uses: redhat-actions/oc-login@v2
       with:
         openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
         openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
