@@ -19,7 +19,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v7
     - name: Install OC CLI tools
-      uses: redhat-actions/openshift-tools-installer@v2
+      uses: redhat-actions/openshift-tools-installer@v3
       with:
         oc: "4"
         skip_cache: true
