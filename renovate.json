@@ -2,5 +2,11 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>bcgov/renovate-config"
-  ]
+  ],
+  "pip-compile": {
+    "managerFilePatterns": ["/(^|/)jobs/requirements\\.txt$/"]
+  },
+  "pip_requirements": {
+    "enabled": false
+  }
 }
