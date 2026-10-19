@@ -3,6 +3,13 @@
   "extends": [
     "github>bcgov/renovate-config#2026.9.26"
   ],
+  "packageRules": [
+    {
+      "description": "Bump bare NuGet versions to the latest release",
+      "matchManagers": ["nuget"],
+      "rangeStrategy": "bump"
+    }
+  ],
   "pip-compile": {
     "managerFilePatterns": ["/(^|/)jobs/requirements\\.txt$/"]
   },
