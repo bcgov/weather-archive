@@ -61,8 +61,8 @@ if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddCors(options =>
     {
-        options.AddPolicy("AllowAll", policy =>
-            policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+        options.AddPolicy("LocalFrontend", policy =>
+            policy.WithOrigins("http://localhost:4000").AllowAnyMethod().AllowAnyHeader());
     });
     builder.Services.AddOpenApi();
 }
@@ -141,7 +141,7 @@ if (!File.Exists(sensorsPath))
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.UseCors("AllowAll");
+    app.UseCors("LocalFrontend");
 }
 
 app.UseExceptionHandler();

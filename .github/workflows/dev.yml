@@ -1,5 +1,8 @@
 name: Build & Deploy to DEV
 
+permissions:
+  contents: read
+
 env:
   OPENSHIFT_SERVER: ${{ secrets.OPENSHIFT_SERVER }}
   OPENSHIFT_NAMESPACE: ${{ vars.OPENSHIFT_NAMESPACE }}
@@ -18,12 +21,12 @@ jobs:
 
     steps:
     - name: checkout code
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
     - name: Set short SHA
       run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
     - name: Build frontend
       id: build_frontend_image
-      uses: redhat-actions/buildah-build@v3
+      uses: redhat-actions/buildah-build@719e3c40d8af9790c23eca13f7daa339f2867034
       with:
         image: wa-frontend
         tags: latest ${{ github.sha }}
@@ -35,7 +38,7 @@ jobs:
         containerfiles: |
           ./frontend/Dockerfile
     - name: Push the image to OpenShift Registry
-      uses: redhat-actions/push-to-registry@v3
+      uses: redhat-actions/push-to-registry@94ade333c38ecc0e60e94785125d9a52ca423b37
       with:
         image: ${{ steps.build_frontend_image.outputs.image }}
         tags: ${{ steps.build_frontend_image.outputs.tags }}
@@ -51,10 +54,10 @@ jobs:
 
     steps:
     - name: checkout code
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
     - name: Build .NET
       id: build_backend_image
-      uses: redhat-actions/buildah-build@v3
+      uses: redhat-actions/buildah-build@719e3c40d8af9790c23eca13f7daa339f2867034
       with:
         image: wa-backend
         tags: latest ${{ github.sha }}
@@ -64,7 +67,7 @@ jobs:
         containerfiles: |
           ./backend/Dockerfile
     - name: Push the image to OpenShift Registry
-      uses: redhat-actions/push-to-registry@v3
+      uses: redhat-actions/push-to-registry@94ade333c38ecc0e60e94785125d9a52ca423b37
       with:
         image: ${{ steps.build_backend_image.outputs.image }}
         tags: ${{ steps.build_backend_image.outputs.tags }}
@@ -79,10 +82,10 @@ jobs:
 
     steps:
     - name: checkout code
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
     - name: Build jobs
       id: build_jobs_image
-      uses: redhat-actions/buildah-build@v3
+      uses: redhat-actions/buildah-build@719e3c40d8af9790c23eca13f7daa339f2867034
       with:
         image: wa-jobs
         tags: latest ${{ github.sha }}
@@ -92,7 +95,7 @@ jobs:
         containerfiles: |
           ./jobs/Dockerfile
     - name: Push the image to OpenShift Registry
-      uses: redhat-actions/push-to-registry@v3
+      uses: redhat-actions/push-to-registry@94ade333c38ecc0e60e94785125d9a52ca423b37
       with:
         image: ${{ steps.build_jobs_image.outputs.image }}
         tags: ${{ steps.build_jobs_image.outputs.tags }}
@@ -107,14 +110,14 @@ jobs:
     environment: dev
     steps:
     - name: Checkout
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
     - name: Install OC CLI tools
-      uses: redhat-actions/openshift-tools-installer@v3
+      uses: redhat-actions/openshift-tools-installer@1f130822bb0930e0ee02a119adcc3271a22b1499
       with:
         oc: "4"
         skip_cache: true
     - name: Give openshift context
-      uses: redhat-actions/oc-login@v2
+      uses: redhat-actions/oc-login@2a1614bc977c054c8786c8e35fc9534bd0ddc156
       with:
         openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
         openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
