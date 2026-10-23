@@ -25,6 +25,8 @@ RUN chgrp -R 0 /var/cache/nginx /var/run /var/log/nginx /usr/share/nginx/html /e
 
 RUN chmod +x /entrypoint.sh
 
+USER 1001:0
+
 ENTRYPOINT ["/entrypoint.sh"]
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]

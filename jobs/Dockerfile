@@ -4,10 +4,12 @@ WORKDIR /app
 
 COPY ./jobs/requirements.txt .
 
-RUN pip install --no-cache-dir --require-hashes -r requirements.txt && pip check \
+RUN pip install --no-cache-dir --only-binary :all: --require-hashes -r requirements.txt && pip check \
 	&& pip uninstall -y pip \
 	&& rm -rf /usr/local/lib/python3.14/ensurepip/_bundled
 
 COPY ./jobs/merge_job.py .
+
+USER 1001:0
 
 CMD ["python", "/app/merge_job.py"]
