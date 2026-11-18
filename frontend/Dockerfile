@@ -1,4 +1,4 @@
-FROM nginx:alpine3.24@sha256:892bb2152464f0c5d8972593a5f5afaf8054552580b699d95f8ff4af08c2d33d
+FROM nginx:alpine3.24@sha256:1bb9390209f866c8c0bf76ba89d3f33a3f6cd6a0e6c1b457af7ee763b9579f41
 
 # Build-time cache-busting version (defaults to 'dev'; CI passes github.sha)
 ARG BUILD_VERSION=dev
